@@ -49,7 +49,7 @@
       .contact-list{
         width: 100%;
       }
-    }  
+    }
   }
 </style>
 
@@ -66,65 +66,65 @@ const cityData = [
     ]
   },
   {
-    "name": "★ 星标朋友",
-    "items": [
+    'name': '★ 星标朋友',
+    'items': [
       {
-        "name": "BEIJING",
-        "value": 1
+        'name': 'BEIJING',
+        'value': 1
       },
       {
-        "name": "SHANGHAI",
-        "value": 2
+        'name': 'SHANGHAI',
+        'value': 2
       },
       {
-        "name": "BEIJING",
-        "value": 3
+        'name': 'BEIJING',
+        'value': 3
       },
       {
-        "name": "SHANGHAI",
-        "value": 4
+        'name': 'SHANGHAI',
+        'value': 4
       }
     ]
   },
   {
-    "name": "A",
-    "items": [
+    'name': 'A',
+    'items': [
       {
-        "name": "ANSHAN",
-        "value": 5
+        'name': 'ANSHAN',
+        'value': 5
       },
       {
-        "name": "ANQING",
-        "value": 6
+        'name': 'ANQING',
+        'value': 6
       },
       {
-        "name": "ANSHAN",
-        "value": 7
+        'name': 'ANSHAN',
+        'value': 7
       },
       {
-        "name": "ANQING",
-        "value": 8
+        'name': 'ANQING',
+        'value': 8
       }
     ]
   },
   {
-    "name": "B",
-    "items": [
+    'name': 'B',
+    'items': [
       {
-        "name": "ANSHAN",
-        "value": 9
+        'name': 'ANSHAN',
+        'value': 9
       },
       {
-        "name": "ANQING",
-        "value": 41
+        'name': 'ANQING',
+        'value': 41
       },
       {
-        "name": "ANSHAN",
-        "value": 32
+        'name': 'ANSHAN',
+        'value': 32
       },
       {
-        "name": "ANQING",
-        "value": 43
+        'name': 'ANQING',
+        'value': 43
       }
     ]
   }
@@ -132,16 +132,16 @@ const cityData = [
 
 export default {
   name: 'Contacts',
-  data() {
+  data () {
     return {
       cityData: cityData
     }
   },
   methods: {
-    selectItem(item) {
+    selectItem (item) {
       console.log(item.name)
     },
-    clickTitle(title) {
+    clickTitle (title) {
       console.log(title)
     }
   }
