@@ -1,8 +1,8 @@
 <template>
   <div class="chat-wrapper">
-    <div class="header show-more">
-      <i class="cubeic-back"></i>
-      <div class="left-name" v-if="false">时代姐妹花</div>
+    <div class="header">
+      <i class="cubeic-back" @click="onBackPage"></i>
+      <div class="left-name" v-if="true">时代姐妹花</div>
       <div class="avatar-info" v-else>
         <cube-scroll
           ref="scroll"
@@ -12,14 +12,14 @@
           <div class="scroll">
             <img
             class="avatar"
-            v-for="item in 15"
+            v-for="item in 5"
             :key="item"
             :src="`https://raw.githubusercontent.com/didi/cube-ui/master/example/pages/recycle-list/avatar${ item % 5 }.png`" alt="">
           </div>
         </cube-scroll>
         <div class="name">时代姐妹花</div>
       </div>
-      <i class="cubeic-person"></i>
+      <i class="cubeic-person" @click="checkPersonInfo"></i>
     </div>
     <div class="main">
 
@@ -34,40 +34,46 @@
   .chat-wrapper{
     .header{
       display: flex;
-      justify-content: space-between;
-      align-items: flex-start;
-      height: 60px;
-      padding: 22px 10px;
+      padding: 20px 0;
       box-sizing: border-box;
       background: url(../assets/images/default_banner_chat.png) no-repeat center center;
       background-size: 100%;
       transition: .5s all;
+      position: relative;
       .cubeic-back, .cubeic-person{
         color: #fff;
-        cursor: pointer;
+        position: absolute;
+        z-index: 2;
+        top: 12px;
+        padding: 10px;
       }
-      &.show-more{
-        height: 100px;
+      .cubeic-back{
+        left: 0;
+      }
+      .cubeic-person{
+        right: 0;
       }
       .left-name{
         color: #fff;
         font-size: 14px;
         line-height: 16px;
         flex: 1;
-        padding: 0 25px;
+        padding: 0 45px;
       }
       .avatar-info{
-        width: calc(100% - 52px);
+        width: 100%;
         .horizontal-scroll{
           width: 100%;
+          height: 37px;
+          text-align: center;
         }
         /deep/ .cube-scroll-content {
           display: inline-block;
         }
         .scroll{
-          height: 37px;
           white-space: nowrap;
           overflow: hidden;
+          padding: 0 40px;
           .avatar{
             display: inline-block;
             width: 35px;
@@ -103,6 +109,12 @@ export default {
   mounted () {
   },
   methods: {
+    onBackPage () {
+      console.log('onBackPage')
+    },
+    checkPersonInfo () {
+      console.log('checkPersonInfo')
+    }
   }
 }
 </script>
