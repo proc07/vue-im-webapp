@@ -30,17 +30,26 @@ export default new Router({
         {
           path: 'home',
           name: 'Home',
-          component: () => import('./views/Home.vue')
+          component: () => import('./views/Home.vue'),
+          meta: {
+            fixedTabs: true
+          }
         },
         {
           path: 'contacts',
           name: 'Contacts',
-          component: () => import('./views/Contacts.vue')
+          component: () => import('./views/Contacts.vue'),
+          meta: {
+            fixedTabs: true
+          }
         },
         {
           path: 'user',
           name: 'User',
-          component: () => import('./views/User.vue')
+          component: () => import('./views/User.vue'),
+          meta: {
+            fixedTabs: true
+          }
         },
         {
           path: 'chat/:id',

@@ -7,13 +7,13 @@
     </div>
     <div class="main">
       <cube-scroll
-        v-if="false"
+        v-if="chatData.length"
         ref="scroll"
         :data="chatData">
         <div class="chat-list">
           <div class="chat-item" v-for="item in chatData" :key="item">
             <div class="face">
-              <img src="http://iph.href.lu/100x100?text=头像" alt="" >
+              <img src="https://s3.amazonaws.com/uifaces/faces/twitter/danpliego/128.jpg" alt="" >
             </div>
             <div class="info border-bottom-1px">
               <div class="top">
@@ -25,7 +25,7 @@
           </div>
         </div>
       </cube-scroll>
-      <div class="status_empty">
+      <div class="status_empty" v-else>
         <svg-icon icon-class="status_empty" class="icon" />
         <div class="txt">Oh~ it empty!</div>
       </div>
@@ -157,10 +157,12 @@
 <script>
 export default {
   name: 'Home',
-  data() {
+  data () {
     return {
-      chatData: [0, 1, 2, 3, 4, 5 ,6 , 7, 8, 9]
+      chatData: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9]
     }
+  },
+  created () {
   }
 }
 </script>

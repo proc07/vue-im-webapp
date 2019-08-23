@@ -1,29 +1,10 @@
 # im-webapp
 
-## Project setup
-```
-npm install
-```
+## 技术栈
 
-### Compiles and hot-reloads for development
-```
-npm run serve
-```
+- vue（全家桶）+ cube-ui
+- node（egg）+ mysql
 
-### Compiles and minifies for production
-```
-npm run build
-```
+## 总结
 
-### Run your tests
-```
-npm run test
-```
-
-### Lints and fixes files
-```
-npm run lint
-```
-
-### Customize configuration
-See [Configuration Reference](https://cli.vuejs.org/config/).
+- vue-virtual-scroller 提高聊天记录中大量数据列表的滚动效果
