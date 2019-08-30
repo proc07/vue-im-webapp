@@ -2,10 +2,10 @@
   <cube-tab-bar
     class="tab-bar-warpper"
     v-model="selectedLabelDefault">
-    <cube-tab 
-      v-for="(item, index) in tabs" 
-      :label="item.label" 
-      :key="item.label"
+    <cube-tab
+      v-for="(item, index) in tabs"
+      :label="item.label"
+      :key="index"
       @click.native="clickHandler(item.path)">
       <i slot="icon" class="tab-icon" :class="item.icon"></i>
       <div>{{item.label}}</div>

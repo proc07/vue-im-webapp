@@ -8,7 +8,7 @@ import {
   Style,
   // basic
   // Button,
-  // Loading,
+  Loading,
   // Tip,
   // Toolbar,
   TabBar,
@@ -42,7 +42,7 @@ import {
   // scroll
   Scroll,
   // Slide,
-  IndexList,
+  IndexList
   // Swipe,
   // Sticky,
   // ScrollNav,
@@ -50,7 +50,7 @@ import {
 } from 'cube-ui'
 
 // Vue.use(Button)
-// Vue.use(Loading)
+Vue.use(Loading)
 // Vue.use(Tip)
 // Vue.use(Toolbar)
 Vue.use(TabBar)
