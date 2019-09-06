@@ -21,7 +21,7 @@
       </div>
       <i class="cubeic-person" @click="checkPersonInfo"></i>
     </div>
-    <div class="main">
+    <div class="chat-main">
       <cube-scroll ref="chatListScroll" class="view-wrapper">
         <div v-show="noMore" class="list-noMore">没有更多数据了</div>
         <div v-show="loading" class="list-loading">
@@ -56,8 +56,25 @@
         </div>
       </cube-scroll>
     </div>
-    <div class="footer">
-
+    <div class="chat-footer">
+      <div class="chat-send">
+        <div class="face-btn">表情</div>
+        <textarea
+          rows="1"
+          ref="chatContent"
+          v-model="chatValue"
+          @keyup="onKeyUpChatText"
+          class="send-text">
+        </textarea>
+        <div class="more-btn">更多</div>
+      </div>
+      <div class="chat-tool" v-show="true">
+        <div class="tool-face">
+          <face-list></face-list>
+        </div>
+        <div class="tool-more">
+        </div>
+      </div>
     </div>
   </div>
 </template>
@@ -192,7 +209,7 @@
         }
       }
     }
-    .main{
+    .chat-main{
       position: relative;
       flex: 1;
       // background: url(../assets/images/bg_msg.jpg) no-repeat center center;
@@ -228,16 +245,61 @@
         }
       }
     }
-    .footer{
+    .chat-footer{
       width: 100%;
-      height: 46px;
-      flex: 0 0 46px;
-      background: #ccc;
+      background: #f2f2f2;
+      &.show-tool{
+      }
+      .chat-send{
+        display: flex;
+        align-items: flex-end;
+        min-height: 46px;
+        padding-bottom: 9px;
+        box-sizing: border-box;
+        // background: #fff;
+        .face-btn{
+          width: 50px;
+          flex: 0 0 50px;
+          text-align: center;
+        }
+        .send-text{
+          flex: 1;
+          padding: 5px;
+          resize: none;
+          outline: none;
+          font-size: 14px;
+          height: 28px;
+          line-height: 18px;
+          box-sizing: border-box;
+          border: none;
+        }
+        .more-btn{
+          width: 50px;
+          flex: 0 0 50px;
+          text-align: center;
+        }
+      }
+      .chat-tool{
+        .tool-face{
+          .face-list{
+          }
+          .tabs{
+            .item{
+              &.del-btn{
+              }
+            }
+          }
+        }
+        .tool-more{
+        }
+      }
     }
   }
 </style>
 
 <script>
+import FaceList from '@/components/FaceList'
+
 var Mock = {}
 Mock.messages = [
   'when you popState and actually being well, we expect it further',
@@ -399,6 +461,7 @@ Mock.messages = [
   'So when the mindset off chaining [INAUDIBLE] out of the same index HTML elements',
   'Views'
 ]
+const CTMSH = 82 // chat textarea max scroll height
 
 export default {
   name: 'Chat',
@@ -406,6 +469,7 @@ export default {
     return {
       loading: true,
       noMore: true,
+      chatValue: '',
       chatData: [],
       id: 1
     }
@@ -415,7 +479,7 @@ export default {
 
     setTimeout(() => {
       const lastEl = this.$refs[`chatItem-${this.chatData.length - 1}`]
-      this.$refs.chatListScroll.scrollToElement(lastEl[0], 100)
+      this.$refs.chatListScroll.scrollToElement(lastEl[0], 200)
     }, 2000)
   },
   methods: {
@@ -424,6 +488,15 @@ export default {
     },
     checkPersonInfo () {
       console.log('checkPersonInfo')
+    },
+    onKeyUpChatText () {
+      const el = this.$refs['chatContent']
+      // 1. 必须要加 height = 'auto'
+      // 2. 要放在 height = maxHeight 前面
+      // 否则会出现删除文本时，高度会多出一些间距
+      el.style.height = 'auto'
+      const maxHeight = el.scrollHeight >= CTMSH ? CTMSH : el.scrollHeight
+      el.style.height = `${maxHeight}px`
     },
     // list
     onPullingDown () {
@@ -460,6 +533,9 @@ export default {
     handleClick (data) {
       console.log(data)
     }
+  },
+  components: {
+    FaceList
   }
 }
 </script>
