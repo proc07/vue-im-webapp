@@ -2,7 +2,7 @@
   <div class="home-wrapper">
     <div class="header">
       <div class="left"></div>
-      <div class="center">Active</div>
+      <div class="center">Chat</div>
       <div class="right"></div>
     </div>
     <div class="main">
@@ -45,12 +45,11 @@
       display: flex;
       justify-content: space-between;
       height: 50px;
-      background: #515967;
-      // background: url(../assets/images/bg_src_morning.jpg) no-repeat center center;
-      background-size: 100%;
+      background-color: #edf0f4;
+      border-bottom: 1px solid rgba(143, 155, 171, 0.35);
       .left{}
       .center{
-        color: #fff;
+        color: #515967;
         font-size: 16px;
         line-height: 50px;
       }
@@ -79,14 +78,6 @@
         .chat-item{
           display: flex;
           padding: 6px 0;
-          &:last-child{
-            padding-bottom: 0;
-            .info{
-              &::after{
-                border-bottom: 0;
-              }
-            }
-          }
           .face{
             width: 50px;
             flex: 0 0 50px;
@@ -103,7 +94,7 @@
               height: 16px;
               line-height: 16px;
               text-align: center;
-              background: red;
+              background: #fc9153;
               color: #fff;
               border-radius: 8px;
               font-size: 11px;

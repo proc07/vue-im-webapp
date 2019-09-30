@@ -1,6 +1,6 @@
 <template>
   <div class="chat-wrapper">
-    <div class="header">
+    <div class="header banner-bg-chat">
       <i class="cubeic-back" @click="onBackPage"></i>
       <div class="left-name" v-if="false">时代姐妹花</div>
       <div class="avatar-info" v-else>
@@ -58,7 +58,10 @@
     </div>
     <div class="chat-footer">
       <div class="chat-send">
-        <div class="face-btn">表情</div>
+        <div class="left-btns">
+          <svg-icon @click="isShowFace = !isShowFace" icon-class="ic_emoji" class="icon" />
+          <svg-icon icon-class="ic_record" class="icon" />
+        </div>
         <textarea
           rows="1"
           ref="chatContent"
@@ -66,13 +69,17 @@
           @keyup="onKeyUpChatText"
           class="send-text">
         </textarea>
-        <div class="more-btn">更多</div>
+        <div class="more-btn" @click="isShowMore = !isShowMore">
+          <svg-icon icon-class="ic_more" class="icon" />
+          <svg-icon v-show="false" icon-class="ic_send" class="icon" />
+        </div>
       </div>
-      <div class="chat-tool" v-show="true">
-        <div class="tool-face">
+      <div class="chat-tool">
+        <div class="tool-face" v-show="isShowFace">
           <face-list></face-list>
         </div>
-        <div class="tool-more">
+        <div class="tool-more" v-show="isShowMore">
+          
         </div>
       </div>
     </div>
@@ -154,10 +161,20 @@
       display: flex;
       padding: 20px 0;
       box-sizing: border-box;
-      background: url(../assets/images/default_banner_chat.png) no-repeat center center;
-      background-size: 100%;
       transition: .5s all;
       position: relative;
+      &.banner-bg-chat{
+        background: url(../assets/images/default_banner_chat.png) no-repeat center center;
+        background-size: 100%;
+      }
+      &.banner-bg-group{
+        background: url(../assets/images/default_banner_group.png) no-repeat center center;
+        background-size: 100%;
+      }
+      &.banner-bg-personal{
+        background: url(../assets/images/default_banner_personal.png) no-repeat center center;
+        background-size: 100%;
+      }
       .cubeic-back, .cubeic-person{
         color: #fff;
         position: absolute;
@@ -257,10 +274,16 @@
         padding-bottom: 9px;
         box-sizing: border-box;
         // background: #fff;
-        .face-btn{
-          width: 50px;
-          flex: 0 0 50px;
-          text-align: center;
+        .left-btns{
+          width: 70px;
+          flex: 0 0 70px;
+          display: flex;
+          justify-content: space-between;
+          padding: 0 5px;
+          box-sizing: border-box;
+          font-size: 25px;
+          color: #4f5a63;
+          margin-bottom: 2px;
         }
         .send-text{
           flex: 1;
@@ -277,10 +300,13 @@
           width: 50px;
           flex: 0 0 50px;
           text-align: center;
+          font-size: 26px;
+          color: #4f5a63;
         }
       }
       .chat-tool{
         .tool-face{
+          border-top: 1px solid #d8dbdc;
           .face-list{
           }
           .tabs{
@@ -291,6 +317,7 @@
           }
         }
         .tool-more{
+          border-top: 1px solid #d8dbdc;
         }
       }
     }
@@ -467,6 +494,8 @@ export default {
   name: 'Chat',
   data () {
     return {
+      isShowFace: false,
+      isShowMore: false,
       loading: true,
       noMore: true,
       chatValue: '',
