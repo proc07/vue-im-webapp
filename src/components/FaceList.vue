@@ -33,7 +33,7 @@
 </template>
 
 <script>
-import emojiData from '@/utils/emojis.json'
+import emojiData from '@/assets/emojis.json'
 
 export default {
   name: 'FaceList',

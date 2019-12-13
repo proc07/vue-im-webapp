@@ -14,23 +14,29 @@ export default new Router({
     {
       path: '/login',
       name: 'Login',
-      component: () => import('./views/Login.vue')
+      component: () => import('@/views/login/index.vue'),
+      meta: {
+        noToken: true
+      }
     },
     {
       path: '/signin',
       name: 'SignIn',
-      component: () => import('./views/SignIn.vue')
+      component: () => import('@/views/signIn/index.vue'),
+      meta: {
+        noToken: true
+      }
     },
     {
       path: '/layout',
       redirect: '/layout/home',
       name: 'Layout',
-      component: () => import('./views/Layout.vue'),
+      component: () => import('@/views/layout/index.vue'),
       children: [
         {
           path: 'home',
           name: 'Home',
-          component: () => import('./views/Home.vue'),
+          component: () => import('@/views/chat/home.vue'),
           meta: {
             fixedTabs: true
           }
@@ -38,7 +44,7 @@ export default new Router({
         {
           path: 'contacts',
           name: 'Contacts',
-          component: () => import('./views/Contacts.vue'),
+          component: () => import('@/views/chat/contacts.vue'),
           meta: {
             fixedTabs: true
           }
@@ -46,20 +52,20 @@ export default new Router({
         {
           path: 'user',
           name: 'User',
-          component: () => import('./views/User.vue'),
+          component: () => import('@/views/chat/user.vue'),
           meta: {
             fixedTabs: true
           }
         },
         {
-          path: 'chat/:id',
-          name: 'Chat',
-          component: () => import('./views/Chat.vue')
+          path: 'singleChat/:id',
+          name: 'SingleChat',
+          component: () => import('@/views/chat/singleChat.vue')
         },
         {
-          path: 'chatGroup/:id',
-          name: '',
-          component: () => import('./views/ChatGroup.vue')
+          path: 'groupChat/:id',
+          name: 'GroupChat',
+          component: () => import('@/views/chat/groupChat.vue')
         }
       ]
     }

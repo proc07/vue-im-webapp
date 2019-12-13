@@ -6,7 +6,26 @@ function resolve (dir) {
 
 module.exports = {
   devServer: {
-    port: 4000
+    port: 4000,
+    proxy: {
+      '/proxy': {
+        target: 'http://localhost:7000',
+        // secure: false,  // 如果是https接口，需要配置这个参数
+        changeOrigin: true,
+        ws: true,
+        pathRewrite: {
+          '^/proxy': ''
+        }
+      },
+      '/socket.io': {
+        target: 'http://localhost:7000',
+        changeOrigin: true,
+        ws: true,
+        pathRewrite: {
+          '^/socket.io': '/socket.io'
+        }
+      }
+    }
   },
 
   css: {

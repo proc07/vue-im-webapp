@@ -79,7 +79,6 @@
           <face-list></face-list>
         </div>
         <div class="tool-more" v-show="isShowMore">
-          
         </div>
       </div>
     </div>
@@ -154,7 +153,7 @@
 </style>
 
 <style lang="scss" scoped>
-  .chat-wrapper{
+  .chat-group-wrapper{
     display: flex;
     flex-direction: column;
     .header{
@@ -164,15 +163,15 @@
       transition: .5s all;
       position: relative;
       &.banner-bg-chat{
-        background: url(../assets/images/default_banner_chat.png) no-repeat center center;
+        background: url(../../assets/images/default_banner_chat.png) no-repeat center center;
         background-size: 100%;
       }
       &.banner-bg-group{
-        background: url(../assets/images/default_banner_group.png) no-repeat center center;
+        background: url(../../assets/images/default_banner_group.png) no-repeat center center;
         background-size: 100%;
       }
       &.banner-bg-personal{
-        background: url(../assets/images/default_banner_personal.png) no-repeat center center;
+        background: url(../../assets/images/default_banner_personal.png) no-repeat center center;
         background-size: 100%;
       }
       .cubeic-back, .cubeic-person{
@@ -230,7 +229,7 @@
       position: relative;
       flex: 1;
       // background: url(../assets/images/bg_msg.jpg) no-repeat center center;
-      background: url(../assets/images/bg_src_woman.jpg) no-repeat center center;
+      background: url(../../assets/images/bg_src_woman.jpg) no-repeat center center;
       background-size: 100%;
       .view-wrapper {
         position: absolute;
@@ -491,7 +490,7 @@ Mock.messages = [
 const CTMSH = 82 // chat textarea max scroll height
 
 export default {
-  name: 'Chat',
+  name: 'ChatGroup',
   data () {
     return {
       isShowFace: false,
@@ -503,7 +502,10 @@ export default {
       id: 1
     }
   },
+  props: {
+  },
   mounted () {
+    console.log(this.$route.params.id)
     this.onPullingDown()
 
     setTimeout(() => {
@@ -513,7 +515,7 @@ export default {
   },
   methods: {
     onBackPage () {
-      console.log('onBackPage')
+      this.$router.back()
     },
     checkPersonInfo () {
       console.log('checkPersonInfo')

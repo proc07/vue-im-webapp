@@ -2,27 +2,33 @@
   <div class="home-wrapper">
     <div class="header">
       <div class="left"></div>
-      <div class="center">Chat</div>
+      <div class="center">{{ socketStatusTxt }}</div>
       <div class="right"></div>
     </div>
     <div class="main">
       <cube-scroll
-        v-if="chatData.length"
+        v-if="chatMsgList.length"
         ref="scroll"
-        :data="chatData">
+        :data="chatMsgList">
         <div class="chat-list">
-          <div class="chat-item" v-for="item in chatData" :key="item">
-            <div class="face">
-              <img src="https://s3.amazonaws.com/uifaces/faces/twitter/danpliego/128.jpg" alt="" >
-            </div>
-            <div class="info border-bottom-1px">
-              <div class="top">
-                <div class="name">张力</div>
-                <div class="time">17-04-22 10:20</div>
+          <cube-index-list-item
+            v-for="item in chatMsgList"
+            :key="item.id"
+            :item="item"
+            @select="selectChatItem">
+            <div class="chat-item">
+              <div class="face" :unread-num="item.unReadNum">
+                <img :src="item.user.portrait" alt="">
               </div>
-              <div class="content">我发给你的额信息实在嗯嘛杨的呢，有没有超出往东南地区全委会</div>
+              <div class="info border-bottom-1px">
+                <div class="top">
+                  <div class="name">{{ item.user.alias || item.user.name }}</div>
+                  <div class="time">{{ item.message[item.message.length - 1]['createdAt'] }}</div>
+                </div>
+                <div class="content">{{ item.message[item.message.length - 1]['entity']['content'] }}</div>
+              </div>
             </div>
-          </div>
+          </cube-index-list-item>
         </div>
       </cube-scroll>
       <div class="status_empty" v-else>
@@ -34,6 +40,8 @@
 </template>
 
 <style lang="scss" scoped>
+  @import "@/assets/scss/variable.scss";
+
   .home-wrapper{
     position: relative;
     .header{
@@ -62,6 +70,9 @@
       display: flex;
       align-items: center;
       justify-content: center;
+      .cube-scroll-wrapper{
+        width: 100%;
+      }
       .status_empty{
         text-align: center;
         .icon{
@@ -74,10 +85,12 @@
         }
       }
       .chat-list{
-        padding: 15px 12px 0 12px;
         .chat-item{
           display: flex;
-          padding: 6px 0;
+          padding: 6px 12px 0 12px;
+          &.item_active {
+            background: rgba(0, 0, 0, 0.04);
+          }
           .face{
             width: 50px;
             flex: 0 0 50px;
@@ -85,7 +98,7 @@
             margin-right: 10px;
             position: relative;
             &::before{
-              content: '210';
+              content: attr(unread-num);
               position: absolute;
               right: -5px;
               top: -5px;
@@ -94,8 +107,8 @@
               height: 16px;
               line-height: 16px;
               text-align: center;
-              background: #fc9153;
-              color: #fff;
+              background: $color-background-unread;
+              color: $color-txt-unread;
               border-radius: 8px;
               font-size: 11px;
             }
@@ -146,14 +159,51 @@
 </style>
 
 <script>
+import { mapGetters } from 'vuex'
+
 export default {
   name: 'Home',
   data () {
     return {
-      chatData: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9]
+      chatMsgList: []
     }
   },
   created () {
+  },
+  computed: {
+    ...mapGetters([
+      'chatList',
+      'socketStatus'
+    ]),
+    socketStatusTxt () {
+      switch (this.socketStatus) {
+        case 1:
+          return '接收中...'
+        case 0:
+          return '连接中...'
+        case -1:
+          return '已断开...'
+        case -2:
+          return '重新连接...'
+        default:
+          return 'Chat'
+      }
+    }
+  },
+  watch: {
+    chatList: {
+      handler: function () {
+        if (this.chatList.length) {
+          this.chatMsgList = this.chatList
+        }
+      },
+      immediate: true
+    }
+  },
+  methods: {
+    selectChatItem (item) {
+      this.$router.push({ path: `/layout/singleChat/${item.roomId}` })
+    }
   }
 }
 </script>

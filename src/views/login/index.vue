@@ -6,16 +6,16 @@
       <div class="login-form">
         <div class="form-item account">
           <svg-icon icon-class="ic_phone" class="icon" />
-          <input type="text" placeholder="邮箱/手机号" class="">
+          <input type="text" placeholder="邮箱/手机号" v-model="form.account" class="">
         </div>
         <div class="form-item password">
           <svg-icon icon-class="ic_key" class="icon" />
-          <input type="password" placeholder="密码" class="">
+          <input type="password" placeholder="密码" v-model="form.password" class="">
         </div>
       </div>
       <router-link tag="div" to="/signin" class="tips-signin">还没有账号？去注册 ></router-link>
 
-      <div class="login-btn">登录</div>
+      <div class="login-btn" @click="onLogin">登录</div>
     </div>
   </div>
 </template>
@@ -24,7 +24,7 @@
   .login-wrapper{
     width: 100%;
     height: 100%;
-    background: url('../assets/images/bg_src_tianjin.jpg') no-repeat center center;
+    background: url('../../assets/images/bg_src_tianjin.jpg') no-repeat center center;
     background-size: cover;
     position: relative;
     .linear-gradient{
@@ -108,15 +108,35 @@
 </style>
 
 <script>
+import { mapActions } from 'vuex'
+
 export default {
   name: 'Login',
   data () {
     return {
+      form: {
+        account: '',
+        password: ''
+      }
     }
   },
   created () {
   },
   methods: {
+    ...mapActions({
+      LogIn: 'LogIn'
+    }),
+    onLogin () {
+      const toast = this.$createToast({
+        txt: 'Loading...',
+        mask: true
+      })
+      toast.show()
+      this.LogIn(this.form).then(res => {
+        toast.hide()
+        this.$router.push({ name: 'Home' })
+      })
+    }
   }
 }
 </script>

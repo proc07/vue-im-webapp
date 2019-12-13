@@ -1,47 +1,55 @@
 <template>
   <div class="signin-wrapper">
     <div class="linear-gradient"></div>
-    <div class="signin container" v-show="true">
+    <div class="signin container" v-show="steps === 0">
       <h1 class="title">欢迎您！</h1>
       <div class="signin-form">
         <div class="form-item account">
           <svg-icon icon-class="ic_phone" class="icon" />
-          <input type="text" placeholder="邮箱/手机号" class="">
+          <input type="text" v-model="userForm.phone" placeholder="邮箱/手机号" class="">
         </div>
         <div class="form-item password">
           <svg-icon icon-class="ic_key" class="icon" />
-          <input type="password" placeholder="密码" class="">
+          <input type="password"  v-model="userForm.password" placeholder="密码" class="">
         </div>
         <div class="form-item person">
           <svg-icon icon-class="ic_person" class="icon" />
-          <input type="text" placeholder="名字" class="">
+          <input type="text" v-model="userForm.name" placeholder="名字" class="">
         </div>
       </div>
       <router-link tag="div" to="/login" class="tips-signin">已有账户？去登录 ></router-link>
 
-      <div class="signin-btn">注册</div>
+      <div class="signin-btn" @click="onRegister">注册</div>
     </div>
-    <div class="update-info container" v-show="false">
+    <div class="update-info container" v-show="steps === 1">
       <h2 class="title">仅差一步了</h2>
       <div class="uploading">
         <div class="box">
           <div class="haed-portrait">
             <svg-icon icon-class="ic_add" class="add-icon" />
+            <cube-upload
+              class="upload-file"
+              :action="baseUrl + '/cloudinary/uploadImage'"
+              :max="1"
+              @file-success="onFileSuccess"
+              @file-removed="onFilesDel"
+              @files-added="onFilesAdded">
+            </cube-upload>
           </div>
-          <div class="sex">
-            <div class="man svg-sex">
+          <div class="sex" @click="userInfo.gender = userInfo.gender === 1 ? 2 : 1">
+            <div class="man svg-sex" v-show="userInfo.gender === 2">
               <svg-icon icon-class="ic_sex_man" />
             </div>
-            <div class="woman svg-sex">
+            <div class="woman svg-sex" v-show="userInfo.gender === 1">
               <svg-icon icon-class="ic_sex_woman" />
             </div>
           </div>
         </div>
       </div>
       <div class="please-select">请选择你的专属头像</div>
-      <input type="text" placeholder="用一句话介绍自己" class="introduce" >
+      <input type="text" v-model="userInfo.description" placeholder="用一句话介绍自己" class="introduce" >
 
-      <div class="submit-btn">提交</div>
+      <div class="submit-btn" @click="onSubmitInfo">提交</div>
     </div>
   </div>
 </template>
@@ -50,7 +58,7 @@
   .signin-wrapper{
     width: 100%;
     height: 100%;
-    background: url('../assets/images/bg_src_tianjin.jpg') no-repeat center center;
+    background: url('../../assets/images/bg_src_tianjin.jpg') no-repeat center center;
     background-size: cover;
     position: relative;
 
@@ -151,6 +159,8 @@
           height: 82px;
           margin: 0 auto;
           .haed-portrait{
+            position: relative;
+            overflow: hidden;
             width: 80px;
             height: 80px;
             border-radius: 50%;
@@ -161,6 +171,28 @@
             justify-content: center;
             .add-icon{
               color: #fff;
+            }
+            .upload-file{
+              // opacity: 0;
+              position: absolute;
+              left: 0;
+              top: 0;
+              /deep/ .cube-upload-file-status{
+                display: none;
+              }
+              /deep/ .cubeic-wrong{
+                top: 0;
+                right: 0;
+                width: 100%;
+                height: 100%;
+                opacity: 0;
+              }
+              /deep/ .cube-upload-btn-def{
+                background: none;
+                i {
+                  display: none;
+                }
+              }
             }
           }
           .sex{
@@ -242,11 +274,78 @@ export default {
   name: 'SignIn',
   data () {
     return {
+      files: [],
+      baseUrl: 'http://localhost:4000/proxy',
+      steps: 0, // 0 注册, 1 填写资料
+      userForm: {
+        name: '',
+        phone: '',
+        password: ''
+      },
+      userInfo: {
+        id: '',
+        portrait: '',
+        gender: 1, // 1 = 女, 2 = 男
+        description: ''
+      }
     }
   },
   created () {
   },
   methods: {
+    onFilesAdded (files) {
+      let hasIgnore = false
+      const maxSize = 1 * 1024 * 1024 // 1M
+      for (let k in files) {
+        const file = files[k]
+        if (file.size > maxSize) {
+          file.ignore = true
+          hasIgnore = true
+        }
+      }
+      hasIgnore && this.$createToast({
+        type: 'warn',
+        time: 1000,
+        txt: 'You selected >1M files'
+      }).show()
+    },
+    onFileSuccess (res) {
+      // console.log(res.response.data.url)
+      this.userInfo.portrait = res.response.data.url
+    },
+    onFilesDel (file) {
+      document.querySelector('.cube-upload-input').click()
+    },
+    onRegister () {
+      this.$nodeApi.user.Register(this.userForm).then(res => {
+        if (res.data.id) {
+          this.steps = 1
+          this.userInfo.id = res.data.id
+        }
+      })
+    },
+    onSubmitInfo () {
+      if (!this.userInfo.portrait) {
+        this.$createToast({
+          txt: '请上传头像！',
+          type: 'error',
+          time: 2000
+        }).show()
+        return
+      }
+      this.$nodeApi.user.OnlyUpdatedOnce(this.userInfo).then(res => {
+        this.$createToast({
+          txt: '提交成功！',
+          type: 'success',
+          time: 2000
+        }).show()
+        setTimeout(() => {
+          this.$router.push({
+            path: '/login'
+          })
+        }, 1000)
+      })
+    }
   }
 }
 </script>

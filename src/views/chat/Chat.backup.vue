@@ -136,7 +136,7 @@
       display: flex;
       padding: 20px 0;
       box-sizing: border-box;
-      background: url(../assets/images/default_banner_chat.png) no-repeat center center;
+      background: url(../../assets/images/default_banner_chat.png) no-repeat center center;
       background-size: 100%;
       transition: .5s all;
       position: relative;
@@ -194,7 +194,7 @@
     .main{
       position: relative;
       flex: 1;
-      background: url(../assets/images/bg_src_woman.jpg) no-repeat center center;
+      background: url(../../assets/images/bg_src_woman.jpg) no-repeat center center;
       background-size: 100%;
     }
     .footer{
