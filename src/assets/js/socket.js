@@ -100,19 +100,35 @@ class ChatSocket {
   getUnReadMsg () {
     this.socket.on('getUnReadMsg', (res) => {
       console.log('getUnReadMsg', res)
+      const { chatList, contacts, currentChatRoom } = store.getters
+      let chatData = getChatDataByRoomId(chatList, res.roomId)
+
+      if (!chatData) {
+        // 房间不存在
+        chatData = {
+          message: [],
+          roomId: res.roomId,
+          unReadNum: 0,
+          user: contacts[res.roomId].targetUser
+        }
+        store.commit('SET_CHATLIST', [chatData, ...chatList])
+      } else {
+        // 将最新的消息，移至顶部
+        store.commit('MOVE_TOP_CHAT', res.roomId)
+      }
+
       // 朋友回复的消息
       if (res.message.entityType === 1) {
-        const chatList = store.getters.chatList
-        const chatData = getChatDataByRoomId(chatList, res.roomId)
         // 处理数据
         res.message.entity = JSON.parse(res.message.entity)
         chatData.message.push(res.message)
+
         // 检测加入未读数量，如果在聊天界面中则不需要
-        const curChatRoom = store.getters.currentChatRoom
-        if (curChatRoom && curChatRoom === res.roomId) {
+        if (currentChatRoom === res.roomId) {
           // 设置已读
-          this.socket.emit('setReadMsg', res.message.id, (arrivalAt) => {})
-          // 需要通知到当前界面，滚动到底部位置
+          this.setReadMsg(res.message.id)
+          // 通知到聊天界面，滚动到底部位置
+          store.commit('SET_NOTIFY_ROOM', true)
         } else {
           chatData.unReadNum += 1
         }
@@ -122,6 +138,12 @@ class ChatSocket {
     })
   }
 
+  // 消息设置为已读
+  setReadMsg (msgId, cb) {
+    this.socket.emit('setReadMsg', msgId, cb)
+  }
+
+  // 获取全部(好友、群)聊天记录数据列表
   getChatList (date) {
     this.status = STATUS_ONLINE
     store.commit('SET_STATUS', STATUS_ONLINE)
@@ -132,7 +154,22 @@ class ChatSocket {
       store.commit('SET_STATUS', null)
 
       console.log('getChatList: ', msgData)
+      // 聊天时间排序 - 降序
+      if (msgData.length) {
+        msgData.sort((a, b) => {
+          const desc = a.message[a.message.length - 1].createdAt < b.message[b.message.length - 1].createdAt
+          return desc ? 1 : -1
+        })
+      }
       store.commit('SET_CHATLIST', msgData)
+    })
+  }
+
+  getHistoryMsg ({ lastDate, friendId }) {
+    return new Promise((resolve, reject) => {
+      this.socket.emit('getHistoryMsg', { lastDate, friendId }, (resData) => {
+        resolve(resData)
+      })
     })
   }
 }

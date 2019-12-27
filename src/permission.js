@@ -13,7 +13,7 @@ router.beforeEach((to, from, next) => {
     if (!userInfo.id) {
       // 获取用户信息
       store.dispatch('GetUserInfo').then(res => {
-        console.log(res)
+        console.log('GetUserInfo', res)
       })
     }
 

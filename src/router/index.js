@@ -36,7 +36,7 @@ export default new Router({
         {
           path: 'home',
           name: 'Home',
-          component: () => import('@/views/chat/home.vue'),
+          component: () => import('@/views/layout/home.vue'),
           meta: {
             fixedTabs: true
           }
@@ -44,28 +44,33 @@ export default new Router({
         {
           path: 'contacts',
           name: 'Contacts',
-          component: () => import('@/views/chat/contacts.vue'),
+          component: () => import('@/views/layout/contacts.vue'),
           meta: {
             fixedTabs: true
           }
         },
         {
-          path: 'user',
-          name: 'User',
-          component: () => import('@/views/chat/user.vue'),
+          path: 'me',
+          name: 'Me',
+          component: () => import('@/views/layout/me.vue'),
           meta: {
             fixedTabs: true
           }
         },
         {
-          path: 'singleChat/:id',
+          path: '/single-chat/:id',
           name: 'SingleChat',
-          component: () => import('@/views/chat/singleChat.vue')
+          component: () => import('@/views/chat/single.vue')
         },
         {
-          path: 'groupChat/:id',
+          path: '/group-chat/:id',
           name: 'GroupChat',
-          component: () => import('@/views/chat/groupChat.vue')
+          component: () => import('@/views/chat/group.vue')
+        },
+        {
+          path: '/user-details/:id',
+          name: 'UserDetails',
+          component: () => import('@/views/user/details.vue')
         }
       ]
     }

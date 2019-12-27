@@ -5,26 +5,42 @@
         <div
           class="item-box"
           v-for="(txt, index) in qqFace"
-          :key="index"
-          @click="onClickFace">
-          <a :title="txt" type="qq" :class="`qq-face-${index}`" class="face"></a>
+          :key="index">
+          <a
+            class="face"
+            type="qq"
+            :title="txt"
+            :class="`qq-face-${index}`"
+            @click="onClickFace(`[${txt}]`, 'qq')">
+          </a>
         </div>
       </div>
       <div class="wx_face" :style="{width: setFaceWidth}" v-show="currentTab === 'wx'">
         <div class="item-box" v-for="(txt, index) in wxFace" :key="index">
-          <a :title="txt" type="wx" :class="`wx-face-${index}`" class="face"></a>
+          <a
+            class="face"
+            type="wx"
+            :title="txt"
+            :class="`wx-face-${index}`"
+            @click="onClickFace(`[${txt}]`, 'wx')"></a>
         </div>
       </div>
-      <div class="emoji_face" :style="{width: setFaceWidth}" v-show="currentTab === 'emoji'">
+      <!-- <div class="emoji_face" :style="{width: setFaceWidth}" v-show="currentTab === 'emoji'">
         <div class="item-box" v-for="(item, key) in emojiFace" :key="key">
-          <a :title="key" type="emoji" :class="`emoji-face`" class="face">{{ item.char }}</a>
+          <a
+            class="face"
+            type="emoji"
+            :title="key"
+            :class="`emoji-face`"
+            @click="onClickFace(item.char, 'emoji')"
+            >{{ item.char }}</a>
         </div>
-      </div>
+      </div> -->
     </div>
     <div class="bottom-tabs">
       <div class="item" :class="currentTab === 'qq' ? 'active' : ''" @click="currentTab = 'qq'">QQ表情</div>
       <div class="item" :class="currentTab === 'wx' ? 'active' : ''" @click="currentTab = 'wx'">微信表情</div>
-      <div class="item" :class="currentTab === 'emoji' ? 'active' : ''" @click="currentTab = 'emoji'">emoji</div>
+      <!-- <div class="item" :class="currentTab === 'emoji' ? 'active' : ''" @click="currentTab = 'emoji'">emoji</div> -->
       <div class="item del-btn" @click="onDelFace">
         <svg-icon icon-class="ic_backspace" class="icon" />
       </div>
@@ -93,10 +109,11 @@ export default {
 
       return notAFont.w !== appleColorEmoji.w || notAFont.h !== appleColorEmoji.h
     },
-    onClickFace () {
+    onClickFace (faceTxt, type) {
+      this.$emit('select', faceTxt, type)
     },
     onDelFace () {
-      this.$emit('del-face')
+      this.$emit('delete')
     }
   }
 }

@@ -7,7 +7,9 @@
       :label="item.label"
       :key="index"
       @click.native="clickHandler(item.path)"
-      :class="'cube-tab-' + item.label"
+      :class="{
+        ['cube-tab-' + item.label]: unReadSum
+      }"
       :unread-sum="unReadSum">
       <i slot="icon" class="tab-icon" :class="item.icon"></i>
       <div>{{item.label }}</div>
@@ -78,7 +80,7 @@ export default {
       }, {
         label: 'Me',
         icon: 'cubeic-person',
-        path: 'User'
+        path: 'Me'
       }]
     }
   },

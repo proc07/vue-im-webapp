@@ -88,7 +88,9 @@
 </style>
 
 <script>
-import { mapGetters } from 'vuex'
+import { mapGetters, mapMutations } from 'vuex'
+import { getChatDataByRoomId } from '@/assets/js/util'
+
 // const GROUP_INDEX = 0
 // const STAR_INDEX = 1
 const FRIEND_INDEX = 2
@@ -127,7 +129,8 @@ export default {
   },
   computed: {
     ...mapGetters([
-      'contacts'
+      'contacts',
+      'chatList'
     ])
   },
   watch: {
@@ -139,8 +142,23 @@ export default {
     }
   },
   methods: {
-    selectItem (item) {
-      this.$router.push({ path: `/layout/singleChat/${item.id}` })
+    ...mapMutations({
+      setChatList: 'SET_CHATLIST'
+    }),
+    selectItem ({ id }) {
+      const friendData = this.contacts[id]
+      const roomData = getChatDataByRoomId(this.chatList, id)
+      if (!roomData) {
+        const newData = {
+          message: [],
+          roomId: id,
+          unReadNum: 0,
+          user: friendData.targetUser
+        }
+        this.setChatList([newData, ...this.chatList])
+      }
+      // path: `/layout/single-chat/${id}`
+      this.$router.push({ name: 'SingleChat', params: { id }  })
     }
   }
 }

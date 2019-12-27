@@ -1,8 +1,8 @@
 <template>
-  <div class="chat-wrapper">
+  <div class="chat-wrapper" @click="closeChatTool">
     <div class="header banner-bg-chat">
       <i class="cubeic-back" @click="onBackPage"></i>
-      <div class="left-name" v-if="false">{{ friendData.user.alias || friendData.user.name }}</div>
+      <div class="left-name" v-if="true">{{ friendData.user.alias || friendData.user.name }}</div>
       <div class="avatar-info" v-else>
         <div class="scroll">
           <img
@@ -11,14 +11,17 @@
         </div>
         <div class="name">{{ friendData.user.alias || friendData.user.name }}</div>
       </div>
-      <i class="cubeic-person" @click="checkPersonInfo"></i>
+      <i class="cubeic-person" @click="checkUserInfo"></i>
     </div>
     <div class="chat-main">
       <cube-scroll
         class="view-wrapper"
         ref="chatListScroll"
+        :options="{
+          bounce: false
+        }"
         :scroll-events="['scroll']"
-        @scroll="onScrollChatView"
+        @scroll="onScroll"
       >
         <div v-show="noMoreData" class="list-noMore">No More Data</div>
         <div v-show="loading" class="list-loading">
@@ -55,18 +58,19 @@
         </div>
       </cube-scroll>
     </div>
-    <div class="chat-footer">
+    <div class="chat-footer" id="filter-footer">
       <div class="chat-send">
         <div class="left-btns">
-          <svg-icon @click="isShowFace = !isShowFace" icon-class="ic_emoji" class="icon" />
+          <svg-icon @click.native="switchFace" icon-class="ic_emoji" class="icon" />
           <svg-icon icon-class="ic_record" class="icon" />
         </div>
         <textarea
+          class="send-text"
           rows="1"
           ref="chatContent"
           v-model="chatValue"
-          @keyup="onKeyUpChatText"
-          class="send-text">
+          @keyup="onKeyUpTextarea"
+          >
         </textarea>
         <div class="more-btn" @click="isShowMore = !isShowMore">
           <svg-icon v-show="false" icon-class="ic_more" class="icon" />
@@ -75,7 +79,11 @@
       </div>
       <div class="chat-tool">
         <div class="tool-face" v-show="isShowFace">
-          <face-list></face-list>
+          <face-list
+            @select="selectFace"
+            @delete="deleteFace"
+          >
+          </face-list>
         </div>
         <div class="tool-more" v-show="isShowMore">
         </div>
@@ -100,9 +108,9 @@
         border-radius: 50%
         margin-left: 15px
         margin-right: 6px
-        min-width: 48px
-        width: 48px
-        height: 48px
+        min-width: 38px
+        width: 38px
+        height: 38px
         background-image: url('https://raw.githubusercontent.com/didi/cube-ui/master/example/pages/recycle-list/unknown.jpg')
         background-size: cover
         outline: none
@@ -324,11 +332,14 @@
 </style>
 
 <script>
-import { mapGetters } from 'vuex'
+import { mapGetters, mapMutations } from 'vuex'
 import FaceList from '@/components/FaceList'
 import { getChatDataByRoomId } from '@/assets/js/util'
 
 const TEXTAREA_MAX_SCROLL_HEIGHT = 82 // textarea max scroll height
+const LOADING_DOM_HEIGHT = 40 // dom loading element height
+const ELEMENT_ID_FOOTER = 'filter-footer' // element id
+const NO_MATCH_CHINESE = /[^\u4e00-\u9fa5]/
 
 export default {
   name: 'Chat',
@@ -336,7 +347,6 @@ export default {
     return {
       // 朋友的信息
       friendData: {
-        lastReceivedAt: null,
         roomId: '',
         message: [],
         user: {}
@@ -344,7 +354,7 @@ export default {
       // switch
       isShowFace: false,
       isShowMore: false,
-      loading: false,
+      loading: true,
       noMoreData: false,
       // textarea value
       chatValue: ''
@@ -353,26 +363,60 @@ export default {
   computed: {
     ...mapGetters([
       'userInfo',
-      'chatList'
+      'chatList',
+      'isNotifyRoom'
     ])
+  },
+  watch: {
+    isNotifyRoom (newVal) {
+      if (newVal) {
+        // 有新消息，滚动到底部
+        this._scrollToLastElement(200)
+        this.setNotifyRoom(false)
+      }
+    }
   },
   activated () {
     this.roomId = this.$route.params.id
     this._getFriendData()
-    this._scrollToLastElement()
   },
   deactivated () {
   },
-  mounted () {
-  },
   methods: {
+    selectFace (faceName) {
+      this.chatValue += faceName
+    },
+    deleteFace () {
+      const value = this.chatValue
+      const lastIndx = value.length - 1
+      const lastChar = value[lastIndx]
+
+      if (lastChar === ']') {
+        const startIndx = value.lastIndexOf('[')
+        const faceStr = value.substring(startIndx + 1, lastIndx)
+
+        if (NO_MATCH_CHINESE.test(faceStr)) {
+          // 字符串中存在非中文
+          this.chatValue = value.slice(0, lastIndx)
+        } else {
+          // false 只有中文
+          this.chatValue = value.substring(0, startIndx)
+        }
+      } else {
+        this.chatValue = value.slice(0, lastIndx)
+      }
+    },
+    switchFace () {
+      this.isShowFace = !this.isShowFace
+      this.$refs.chatContent.focus()
+    },
     onBackPage () {
       this.$router.back()
     },
-    checkPersonInfo () {
-      console.log('checkPersonInfo')
+    checkUserInfo () {
+      this.$router.push({ name: 'UserDetails', params: { id: this.friendData.user.id } })
     },
-    onKeyUpChatText () {
+    onKeyUpTextarea () {
       const el = this.$refs['chatContent']
       // 1. 必须要加 height = 'auto'
       // 2. 要放在 height = maxHeight 前面
@@ -381,21 +425,50 @@ export default {
       const maxHeight = el.scrollHeight >= TEXTAREA_MAX_SCROLL_HEIGHT ? TEXTAREA_MAX_SCROLL_HEIGHT : el.scrollHeight
       el.style.height = `${maxHeight}px`
     },
-    // list
-    onPullingDown () {
-      // if (res.length) {
-      //   res.forEach(item => {
-      //     this.friendData.message.unshift(item)
-      //   })
-      // } else {
-      //   this.$refs.scroll.forceUpdate()
-      // }
+    closeChatTool (event) {
+      for (const index in event.path) {
+        if (ELEMENT_ID_FOOTER === event.path[index].id) {
+          return
+        }
+      }
+      this.isShowFace = false
+      this.isShowMore = false
     },
-    onScrollChatView (pos) {
+    onScroll (pos) {
       // 上拉加载历史数据
-      if (pos.y >= 50 && this.loading === false) {
-        console.log('上拉加载历史数据')
-        this.loading = true
+      if (
+        this._msgLength &&
+        pos.y >= -(LOADING_DOM_HEIGHT / 2) &&
+        !this._isGetData
+      ) {
+        this._isGetData = true
+        const lastDate = this.friendData.message[0].createdAt
+        this.$chatSocket.getHistoryMsg({
+          lastDate,
+          friendId: this.friendData.user.id
+        }).then(res => {
+          if (res.length === 0) {
+            // 没有数据了
+            this.loading = false
+            this.noMoreData = true
+          } else {
+            // 将获取到的消息设置为已读
+            this._setReadMsg(res)
+
+            // 延迟1秒，有个缓冲效果，也减少服务器压力
+            setTimeout(() => {
+              this._isGetData = false
+              const oldData = this.friendData.message
+              this.friendData.message = [...res, ...oldData]
+              this._refresh()
+              // ! 当前用户还在滚动中时，不执行 scrollToElement
+              this.$nextTick(() => {
+                const firstEl = this.$refs[`chatItem-${res.length}`][0]
+                this.$refs.chatListScroll.scrollToElement(firstEl, 0, 0, -LOADING_DOM_HEIGHT)
+              })
+            }, 500)
+          }
+        })
       }
     },
     // 发送按钮
@@ -411,28 +484,66 @@ export default {
           // 发送成功
           console.log('onSendMsg', res)
           this.friendData.message.push(res)
+          this._refresh()
           this._scrollToLastElement(200)
+          // mapMutations
+          this.moveTopChat(this.friendData.roomId)
         }).catch(err => {
           // 发送失败
           console.log(err)
         })
       }
     },
+    _setReadMsg (data) {
+      let count = 0
+      data.forEach(msgItem => {
+        if (!msgItem.arrivalAt && msgItem.senderId === this.friendData.user.id) {
+          count++
+          this.$chatSocket.setReadMsg(msgItem.id, (arrivalAt) => {
+            msgItem.arrivalAt = arrivalAt
+          })
+        }
+      })
+      if (count > 0) {
+        this.friendData.unReadNum -= count
+      }
+    },
+    _refresh () {
+      this.$nextTick(() => {
+        this.$refs['chatListScroll'].refresh()
+      })
+    },
     // 滚动聊天某一条数据的位置
     _scrollToLastElement (time = 0) {
       setTimeout(() => {
         const lastEl = this.$refs[`chatItem-${this.friendData.message.length - 1}`]
-        this.$refs.chatListScroll.scrollToElement(lastEl[0], time)
+        lastEl && this.$refs.chatListScroll.scrollToElement(lastEl[0], time)
       })
     },
     // 从 vuex 中获取到朋友的数据
     _getFriendData () {
-      if (!this.roomId || !this.chatList.length) {
-        this.$router.push({ name: 'Home' })
-        return
+      const friendData = getChatDataByRoomId(this.chatList, this.roomId)
+
+      if (!this.roomId || !friendData) {
+        return this.$router.push({ name: 'Home' })
       }
-      this.friendData = getChatDataByRoomId(this.chatList, this.roomId)
-    }
+
+      this._msgLength = this.friendData.message.length
+      // 没有聊天数据，关闭加载效果
+      if (!this._msgLength) {
+        this.loading = false
+      }
+
+      this.friendData = friendData
+      // 第一次进入时，设置消息为已读
+      this._setReadMsg(this.friendData.message)
+      this._refresh()
+      this._scrollToLastElement()
+    },
+    ...mapMutations({
+      setNotifyRoom: 'SET_NOTIFY_ROOM',
+      moveTopChat: 'MOVE_TOP_CHAT'
+    })
   },
   components: {
     FaceList

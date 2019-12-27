@@ -10,26 +10,26 @@
         v-if="chatMsgList.length"
         ref="scroll"
         :data="chatMsgList">
-        <div class="chat-list">
+        <transition-group name="msg-list" tag="div" class="chat-list">
           <cube-index-list-item
             v-for="item in chatMsgList"
-            :key="item.id"
+            :key="item.roomId"
             :item="item"
             @select="selectChatItem">
             <div class="chat-item">
-              <div class="face" :unread-num="item.unReadNum">
+              <div class="face" :class="item.unReadNum ? 'hot': ''" :unread-num="item.unReadNum">
                 <img :src="item.user.portrait" alt="">
               </div>
               <div class="info border-bottom-1px">
                 <div class="top">
                   <div class="name">{{ item.user.alias || item.user.name }}</div>
-                  <div class="time">{{ item.message[item.message.length - 1]['createdAt'] }}</div>
+                  <div class="time">{{ handlerCreatedAt(item) }}</div>
                 </div>
-                <div class="content">{{ item.message[item.message.length - 1]['entity']['content'] }}</div>
+                <div class="content">{{ handlerContent(item) }}</div>
               </div>
             </div>
           </cube-index-list-item>
-        </div>
+          </transition-group>
       </cube-scroll>
       <div class="status_empty" v-else>
         <svg-icon icon-class="status_empty" class="icon" />
@@ -85,6 +85,19 @@
         }
       }
       .chat-list{
+        padding-top: 5px;
+        .msg-list-enter-active{
+          transition: all .3s;
+        }
+        // .msg-list-leave-active
+        .msg-list-enter{
+          opacity: 0;
+          transform: translateX(80%);
+        }
+        // .msg-list-leave-to{
+        //   opacity: 0;
+        //   transform: translateX(-80%);
+        // }
         .chat-item{
           display: flex;
           padding: 6px 12px 0 12px;
@@ -97,20 +110,22 @@
             height: 50px;
             margin-right: 10px;
             position: relative;
-            &::before{
-              content: attr(unread-num);
-              position: absolute;
-              right: -5px;
-              top: -5px;
-              padding: 0 5px;
-              min-width: 6px;
-              height: 16px;
-              line-height: 16px;
-              text-align: center;
-              background: $color-background-unread;
-              color: $color-txt-unread;
-              border-radius: 8px;
-              font-size: 11px;
+            &.hot{
+              &::before{
+                content: attr(unread-num);
+                position: absolute;
+                right: -5px;
+                top: -5px;
+                padding: 0 5px;
+                min-width: 6px;
+                height: 16px;
+                line-height: 16px;
+                text-align: center;
+                background: $color-background-unread;
+                color: $color-txt-unread;
+                border-radius: 8px;
+                font-size: 11px;
+              }
             }
             img{
               width: 100%;
@@ -168,13 +183,16 @@ export default {
       chatMsgList: []
     }
   },
-  created () {
-  },
   computed: {
     ...mapGetters([
       'chatList',
       'socketStatus'
     ]),
+    unReadSum () {
+      return this.chatList.reduce((pre, cur) => {
+        return pre + cur.unReadNum
+      }, 0)
+    },
     socketStatusTxt () {
       switch (this.socketStatus) {
         case 1:
@@ -186,23 +204,31 @@ export default {
         case -2:
           return '重新连接...'
         default:
-          return 'Chat'
+          return this.unReadSum ? `Chat(${this.unReadSum})` : 'Chat'
       }
     }
   },
   watch: {
     chatList: {
-      handler: function () {
-        if (this.chatList.length) {
-          this.chatMsgList = this.chatList
+      handler: function (newList) {
+        console.log('watch chatlist', newList)
+        if (newList.length) {
+          this.chatMsgList = newList
         }
       },
       immediate: true
     }
   },
   methods: {
+    handlerCreatedAt ({ message }) {
+      return message.length ? message[message.length - 1]['createdAt'] : ''
+    },
+    handlerContent ({ message }) {
+      return message.length ? message[message.length - 1]['entity']['content'] : ''
+    },
     selectChatItem (item) {
-      this.$router.push({ path: `/layout/singleChat/${item.roomId}` })
+      // path: `/layout/single-chat/${item.roomId}`
+      this.$router.push({ name: 'SingleChat', params: { id: item.roomId }  })
     }
   }
 }

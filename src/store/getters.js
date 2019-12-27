@@ -1,6 +1,7 @@
 export default {
   // 全局公用
   currentChatRoom: state => state.app.currentChatRoom,
+  isNotifyRoom: state => state.app.isNotifyRoom,
   // 用户信息
   token: state => state.user.token,
   userInfo: state => state.user.userInfo,
