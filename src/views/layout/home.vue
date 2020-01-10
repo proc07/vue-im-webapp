@@ -1,9 +1,11 @@
 <template>
   <div class="home-wrapper">
     <div class="header">
-      <div class="left"></div>
-      <div class="center">{{ socketStatusTxt }}</div>
-      <div class="right"></div>
+      <div class="title-status">{{ socketStatusTxt }}</div>
+      <div class="right-bar">
+        <i @click="searchVisible = true" class="cubeic-search icon"></i>
+        <svg-icon @click.native="openAction" icon-class="ic_circle_add" class="icon"></svg-icon>
+      </div>
     </div>
     <div class="main">
       <cube-scroll
@@ -16,26 +18,45 @@
             :key="item.roomId"
             :item="item"
             @select="selectChatItem">
-            <div class="chat-item">
+            <!-- 好友 -->
+            <div class="chat-item" v-if="item.type === 'FRIEND'">
               <div class="face" :class="item.unReadNum ? 'hot': ''" :unread-num="item.unReadNum">
                 <img :src="item.user.portrait" alt="">
               </div>
               <div class="info border-bottom-1px">
                 <div class="top">
                   <div class="name">{{ item.user.alias || item.user.name }}</div>
-                  <div class="time">{{ handlerCreatedAt(item) }}</div>
+                  <div class="time">{{ getLastDataByName(item, 'createdAt') }}</div>
                 </div>
-                <div class="content">{{ handlerContent(item) }}</div>
+                <div class="content">{{ getLastDataByName(item, 'content') }}</div>
+              </div>
+            </div>
+            <!-- 群 -->
+            <div class="chat-item" v-else-if="item.type === 'GROUP'">
+            </div>
+            <!-- 系统 -->
+            <div class="chat-item" v-else>
+              <div class="face" :class="item.unReadNum ? 'hot': ''" :unread-num="item.unReadNum">
+                <img :src="item.user.portrait" alt="">
+              </div>
+              <div class="info border-bottom-1px">
+                <div class="top">
+                  <div class="name">{{ item.user.alias }}</div>
+                  <div class="time">{{ getLastDataByName(item, 'createdAt') }}</div>
+                </div>
+                <div class="content">{{ getLastDataByName(item, 'description') }}</div>
               </div>
             </div>
           </cube-index-list-item>
-          </transition-group>
+        </transition-group>
       </cube-scroll>
       <div class="status_empty" v-else>
         <svg-icon icon-class="status_empty" class="icon" />
         <div class="txt">Oh~ it empty!</div>
       </div>
     </div>
+
+    <search :visible.sync="searchVisible" />
   </div>
 </template>
 
@@ -55,13 +76,22 @@
       height: 50px;
       background-color: #edf0f4;
       border-bottom: 1px solid rgba(143, 155, 171, 0.35);
-      .left{}
-      .center{
+      .title-status{
         color: #515967;
         font-size: 16px;
         line-height: 50px;
+        padding-left: 12px;
       }
-      .right{}
+      .right-bar{
+        position: relative;
+        display: flex;
+        align-items: center;
+        .icon{
+          font-size: 24px;
+          padding: 10px 12px;
+          color: #505967;
+        }
+      }
     }
     .main{
       padding-top: 50px;
@@ -175,11 +205,14 @@
 
 <script>
 import { mapGetters } from 'vuex'
+import Search from '@/components/Search.vue'
 
 export default {
   name: 'Home',
   data () {
     return {
+      searchVisible: false,
+      searchValue: '',
       chatMsgList: []
     }
   },
@@ -220,16 +253,41 @@ export default {
     }
   },
   methods: {
-    handlerCreatedAt ({ message }) {
-      return message.length ? message[message.length - 1]['createdAt'] : ''
+    openAction () {
+      this.$createActionSheet({
+        data: [
+          {
+            content: '<i class="cubeic-message"><i> 发起群聊',
+            handler: '_createGroupChat'
+          },
+          {
+            content: '<i class="cubeic-person"><i> 添加朋友',
+            handler: '_addFriend'
+          }
+        ],
+        onSelect: (item, index) => {
+          console.log(item.handler)
+        }
+      }).show()
     },
-    handlerContent ({ message }) {
-      return message.length ? message[message.length - 1]['entity']['content'] : ''
+    // 公共方法，获取 message 最后一条数据中的某个参数
+    getLastDataByName ({ message }, name) {
+      return message.length ? message[message.length - 1]['entity'][name] : ''
     },
     selectChatItem (item) {
-      // path: `/layout/single-chat/${item.roomId}`
-      this.$router.push({ name: 'SingleChat', params: { id: item.roomId }  })
+      if (item.type === 'SYSTEM') {
+        this.$router.push({ name: 'SystemNotify', params: {} })
+      } else if (item.type === 'FRIEND') {
+        this.$router.push({ name: 'SingleChat', params: { id: item.roomId } })
+      }
+    },
+    _createGroupChat () {
+    },
+    _addFriend () {
     }
+  },
+  components: {
+    Search
   }
 }
 </script>

@@ -71,6 +71,11 @@ export default new Router({
           path: '/user-details/:id',
           name: 'UserDetails',
           component: () => import('@/views/user/details.vue')
+        },
+        {
+          path: '/system-notify',
+          name: 'SystemNotify',
+          component: () => import('@/views/chat/system.vue')
         }
       ]
     }

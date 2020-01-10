@@ -18,6 +18,13 @@
           <i class="cubeic-arrow"></i>
         </div>
       </div>
+      <div class="card-item">
+        <img class="icon" src="@/assets/images/me/setting-icon.png" alt="icon">
+        <div class="box">
+          <div class="name">关于项目</div>
+          <i class="cubeic-arrow"></i>
+        </div>
+      </div>
       <div class="card-item" @click="onLogOut">
         <img class="icon" src="@/assets/images/me/setting-icon.png" alt="icon">
         <div class="box">

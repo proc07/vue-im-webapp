@@ -270,12 +270,14 @@
 </style>
 
 <script>
+const BASE_ROUTER = `${process.env.VUE_APP_ROUTER_PATH + process.env.VUE_APP_ROUTER_BASE_API}`
+
 export default {
   name: 'SignIn',
   data () {
     return {
       files: [],
-      baseUrl: 'http://localhost:4000/proxy',
+      baseUrl: BASE_ROUTER,
       steps: 0, // 0 注册, 1 填写资料
       userForm: {
         name: '',

@@ -5,3 +5,10 @@ export function getChatDataByRoomId (data, id) {
     }
   }
 }
+
+export function isJsonParse (val) {
+  if (typeof val === 'object') {
+    return JSON.parse(val)
+  }
+  return val
+}

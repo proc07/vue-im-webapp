@@ -27,7 +27,6 @@ import {
   // Validator,
   Upload,
   // Form,
-  // popup
   // Popup,
   Toast,
   // Picker,
@@ -36,7 +35,7 @@ import {
   // TimePicker,
   // SegmentPicker,
   Dialog,
-  // ActionSheet,
+  ActionSheet,
   // Drawer,
   // ImagePreview,
   // scroll
@@ -76,7 +75,7 @@ Vue.use(Toast)
 // Vue.use(TimePicker)
 // Vue.use(SegmentPicker)
 Vue.use(Dialog)
-// Vue.use(ActionSheet)
+Vue.use(ActionSheet)
 // Vue.use(Drawer)
 // Vue.use(ImagePreview)
 Vue.use(Scroll)

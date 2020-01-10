@@ -1,7 +1,7 @@
 <template>
   <div class="chat-wrapper" @click="closeChatTool">
     <div class="header banner-bg-chat">
-      <i class="cubeic-back" @click="onBackPage"></i>
+      <svg-icon icon-class="ic_back" @click.native="onBackPage" class="icon-back" />
       <div class="left-name" v-if="true">{{ friendData.user.alias || friendData.user.name }}</div>
       <div class="avatar-info" v-else>
         <div class="scroll">
@@ -11,7 +11,7 @@
         </div>
         <div class="name">{{ friendData.user.alias || friendData.user.name }}</div>
       </div>
-      <i class="cubeic-person" @click="checkUserInfo"></i>
+      <svg-icon icon-class="ic_person" @click.native="checkUserInfo" class="icon-person" />
     </div>
     <div class="chat-main">
       <cube-scroll
@@ -72,9 +72,9 @@
           @keyup="onKeyUpTextarea"
           >
         </textarea>
-        <div class="more-btn" @click="isShowMore = !isShowMore">
-          <svg-icon v-show="false" icon-class="ic_more" class="icon" />
-          <svg-icon v-show="true" @click.native="onSendMsg" icon-class="ic_send" class="icon" />
+        <div class="more-btn" @click.stop="isShowMore = !isShowMore">
+          <svg-icon v-show="chatValue === ''" icon-class="ic_more" class="icon" />
+          <svg-icon v-show="chatValue !== ''" @click.native.stop="onSendMsg" icon-class="ic_send" class="icon" />
         </div>
       </div>
       <div class="chat-tool">
@@ -86,6 +86,11 @@
           </face-list>
         </div>
         <div class="tool-more" v-show="isShowMore">
+          <ul class="list">
+            <li class="item">1</li>
+            <li class="item">2</li>
+            <li class="item">3</li>
+          </ul>
         </div>
       </div>
     </div>
@@ -181,25 +186,26 @@
         background: url(../../assets/images/default_banner_personal.png) no-repeat center center;
         background-size: 100%;
       }
-      .cubeic-back, .cubeic-person{
+      .icon-back, .icon-person{
         color: #fff;
         position: absolute;
         z-index: 2;
         top: 12px;
-        padding: 10px;
+        padding: 8px;
+        font-size: 20px;
       }
-      .cubeic-back{
-        left: 0;
+      .icon-back{
+        left: 7px;
       }
-      .cubeic-person{
-        right: 0;
+      .icon-person{
+        right: 7px;
       }
       .left-name{
         color: #fff;
         font-size: 14px;
         line-height: 20px;
         flex: 1;
-        padding: 0 45px;
+        padding: 0 65px;
       }
       .avatar-info{
         width: 100%;

@@ -3,10 +3,10 @@ import store from '@/store'
 import { getToken } from './token'
 import { getChatDataByRoomId } from './util'
 
-const STATUS_ONLINE = 1
-const STATUS_CONNECT = 0
-const STATUS_LEAVE = -1
-const STATUS_RECONNECT = -2
+const STATUS_ONLINE = 1 // 在线
+const STATUS_CONNECT = 0 // 连接中
+const STATUS_LEAVE = -1 // 离开
+const STATUS_RECONNECT = -2 // 重新连接
 
 function generateUUID () {
   var d = new Date().getTime()
@@ -108,8 +108,15 @@ class ChatSocket {
         chatData = {
           message: [],
           roomId: res.roomId,
-          unReadNum: 0,
-          user: contacts[res.roomId].targetUser
+          unReadNum: 0
+        }
+        if (res.roomId === 'simulate_system_id') {
+          chatData.user = {
+            portrait: 'https://res.cloudinary.com/zhangli-blog/image/upload/v1577949261/%E9%80%9A%E7%9F%A5.png',
+            alias: '消息通知'
+          }
+        } else {
+          chatData.user = contacts[res.roomId].targetUser
         }
         store.commit('SET_CHATLIST', [chatData, ...chatList])
       } else {
@@ -118,7 +125,7 @@ class ChatSocket {
       }
 
       // 朋友回复的消息
-      if (res.message.entityType === 1) {
+      if (res.message.entityType === 1 || res.message.entityType === 1001) {
         // 处理数据
         res.message.entity = JSON.parse(res.message.entity)
         chatData.message.push(res.message)
@@ -133,7 +140,7 @@ class ChatSocket {
           chatData.unReadNum += 1
         }
       } else {
-        // 群消息
+
       }
     })
   }

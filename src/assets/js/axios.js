@@ -35,6 +35,7 @@ instance.interceptors.response.use(function (response) {
       type: 'error',
       time: 3000
     }).show()
+    return Promise.reject(res)
   } else if (res.status === -1) {
     Dialog.$create({
       title: '您已被登出，请重新登录',
@@ -51,8 +52,9 @@ instance.interceptors.response.use(function (response) {
         })
       }
     }).show()
+  } else {
+    return res
   }
-  return res
 }, function (error) {
   // Do something with response error
   Toast.$create({

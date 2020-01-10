@@ -2,23 +2,26 @@
   <div class="user-details">
     <div class="header" :style="{  }">
       <div class="bar">
-        <div class="back"></div>
-        <div class="star"></div>
+        <svg-icon icon-class="ic_back" @click.native="$router.back()" class="icon-back" />
+        <svg-icon :icon-class="isFavorite ? 'ic_favorite' : 'ic_favorite_border'" @click.native="toggleFavorite" class="icon-favorite" />
       </div>
-      <div class="name">你好</div>
-      <img src="https://res.cloudinary.com/zhangli-blog/image/upload/v1575364101/k3wkxmv10lpyn8hpk3mr.jpg" alt="" class="portrait">
+      <div class="name">{{ userInfo.name }}</div>
+      <img :src="userInfo.portrait" alt="" class="portrait">
     </div>
     <div class="userinfo">
       <div class="follow-wrapper">
+        <!-- 喜欢我的朋友 -->
         <div class="follows">
-          FOLLOWS<br/>1
+          FOLLOWS<br/>0
         </div>
+        <!-- 我喜欢的朋友 -->
         <div class="following">
-          FOLLOWING<br/>1
+          FOLLOWING<br/>0
         </div>
       </div>
-      <div class="description">description</div>
+      <div class="description">{{ userInfo.description || '暂无介绍' }}</div>
     </div>
+    <div class="add-friend" v-show="!isFriend" @click="addFriend">加好友</div>
   </div>
 </template>
 
@@ -33,12 +36,19 @@
       .bar{
         width: 100%;
         height: 56px;
-        background: rgba(255, 255, 255, 0.4);
-        .back{
-
+        .icon-back, .icon-favorite{
+          font-size: 20px;
+          color: #fff;
+          padding: 8px;
+          position: absolute;
+          z-index: 2;
+          top: 12px;
         }
-        .star{
-          
+        .icon-back{
+          left: 7px;
+        }
+        .icon-favorite{
+          right: 7px;
         }
       }
       .name{
@@ -82,17 +92,77 @@
         color: #87878f;
       }
     }
+    .add-friend{
+      position: fixed;
+      left: 50%;
+      bottom: 30px;
+      margin-left: -65px;
+      background: #589993;
+      color: rgba(255, 255, 255, 0.8);
+      width: 130px;
+      height: 40px;
+      line-height: 40px;
+      border-radius: 20px;
+      text-align: center;
+      cursor: pointer;
+    }
   }
 </style>
 
 <script>
+import { mapGetters } from 'vuex'
 
 export default {
-  name: '',
+  name: 'UserDetails',
   data () {
     return {
+      userInfo: {},
+      isFriend: true,
+      isFavorite: false
     }
   },
-  methods: {}
+  activated () {
+    const id = this.$route.params.id
+    this._getUserInfo(id)
+  },
+  computed: {
+    ...mapGetters({
+      ownUserInfo: 'userInfo'
+    })
+  },
+  methods: {
+    toggleFavorite () {
+      this.isFavorite = !this.isFavorite
+    },
+    addFriend () {
+      const { name } = this.ownUserInfo
+
+      this.$createDialog({
+        type: 'prompt',
+        title: '好友请求',
+        prompt: {
+          value: `我是${name}`,
+          placeholder: '发送验证申请，等对方通过'
+        },
+        onConfirm: (e, value) => {
+          this.$nodeApi.apply.ApplyFriend({
+            description: value,
+            targetId: this.userInfo.id
+          }).then(res => {
+            this.$createToast({
+              txt: '发送成功',
+              type: 'correct'
+            }).show()
+          })
+        }
+      }).show()
+    },
+    _getUserInfo (id) {
+      this.$nodeApi.user.GetUserInfoById({ id }).then(res => {
+        this.userInfo = res.data.user
+        this.isFriend = res.data.isFriend
+      })
+    }
+  }
 }
 </script>

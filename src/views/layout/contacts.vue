@@ -155,10 +155,10 @@ export default {
           unReadNum: 0,
           user: friendData.targetUser
         }
-        this.setChatList([newData, ...this.chatList])
+        /// this.setChatList([newData, ...this.chatList])
+        this.chatList.unshift(newData)
       }
-      // path: `/layout/single-chat/${id}`
-      this.$router.push({ name: 'SingleChat', params: { id }  })
+      this.$router.push({ name: 'SingleChat', params: { id } })
     }
   }
 }

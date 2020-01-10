@@ -6,7 +6,7 @@ function resolve (dir) {
 
 module.exports = {
   devServer: {
-    port: 4000,
+    port: 1314,
     proxy: {
       '/proxy': {
         target: 'http://localhost:7000',

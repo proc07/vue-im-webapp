@@ -12,11 +12,23 @@ export default {
     const { contacts, chatList } = state.data
     // 把别名参数放入到对方数据中
     chatList.forEach(item => {
-      item.user = {
-        alias: item.alias,
-        ...contacts[item.roomId]['targetUser']
+      if (item.type === 'FRIEND') {
+        item.user = {
+          alias: item.alias,
+          ...contacts[item.roomId]['targetUser']
+        }
       }
     })
     return chatList
+  },
+  systemMsg: (state) => {
+    const { chatList } = state.data
+
+    for (const item of chatList) {
+      if (item.type === 'SYSTEM') {
+        return item
+      }
+    }
+    return {}
   }
 }

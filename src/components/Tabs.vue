@@ -59,7 +59,7 @@
 import { mapGetters } from 'vuex'
 
 const TABS_KEY_VALUES = {
-  Home: 'Home',
+  Home: 'Chat',
   Contacts: 'Contacts',
   User: 'Me'
 }
@@ -68,10 +68,10 @@ export default {
   name: 'Tabs',
   data () {
     return {
-      selectedLabelDefault: 'Home',
+      selectedLabelDefault: 'Chat',
       tabs: [{
         label: 'Chat',
-        icon: 'cubeic-home',
+        icon: 'cubeic-message',
         path: 'Home'
       }, {
         label: 'Contacts',

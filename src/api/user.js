@@ -28,5 +28,10 @@ export default [
     name: 'SearchUserByPhoneOrName',
     url: '/user/searchUserByPhoneOrName',
     method: 'get'
+  },
+  {
+    name: 'GetUserInfoById',
+    url: '/user/getUserInfoById',
+    method: 'get'
   }
 ]
