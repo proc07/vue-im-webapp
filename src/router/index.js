@@ -76,6 +76,11 @@ export default new Router({
           path: '/system-notify',
           name: 'SystemNotify',
           component: () => import('@/views/chat/system.vue')
+        },
+        {
+          path: '/create-group',
+          name: 'CreateGroup',
+          component: () => import('@/views/user/create-group.vue')
         }
       ]
     }

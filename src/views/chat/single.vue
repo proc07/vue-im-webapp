@@ -11,7 +11,7 @@
         </div>
         <div class="name">{{ friendData.user.alias || friendData.user.name }}</div>
       </div>
-      <svg-icon icon-class="ic_person" @click.native="checkUserInfo" class="icon-person" />
+      <svg-icon icon-class="ic_more" @click.native="checkUserMore" class="icon-person" />
     </div>
     <div class="chat-main">
       <cube-scroll
@@ -35,8 +35,11 @@
             :key="index"
             :ref="'chatItem-' + index">
             <!-- 对方 -->
-            <div :id="data.id" class="item-left" v-if="data.senderId === friendData.user.id">
-              <div class="avatar" :style="{backgroundImage: 'url(' + (friendData.user.portrait || '') + ')'}"></div>
+            <div
+              :id="data.id"
+              class="item-left"
+              v-if="data.senderId === friendData.user.id">
+              <div class="avatar" @click="checkUserInfo" :style="{backgroundImage: 'url(' + (friendData.user.portrait || '') + ')'}"></div>
               <div class="bubble">
                 <p>{{ data.entity.content }}</p>
                 <div class="meta">
@@ -421,6 +424,9 @@ export default {
     },
     checkUserInfo () {
       this.$router.push({ name: 'UserDetails', params: { id: this.friendData.user.id } })
+    },
+    checkUserMore () {
+      // this.$router.push({ name: 'UserDetails', params: { id: this.friendData.user.id } })
     },
     onKeyUpTextarea () {
       const el = this.$refs['chatContent']

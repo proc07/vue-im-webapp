@@ -52,6 +52,7 @@ instance.interceptors.response.use(function (response) {
         })
       }
     }).show()
+    return Promise.reject(res)
   } else {
     return res
   }

@@ -20,7 +20,7 @@
             @select="selectItem">
             <div class="custom-item" v-if="item.targetUser">
               <img class="portrait" :src="item.targetUser.portrait" alt="" >
-              <div class="name">{{ item.targetUser.alias || item.targetUser.name }}</div>
+              <div class="name">{{ item.targetAlias || item.targetUser.name }}</div>
             </div>
             <div class="custom-item" v-else>
               {{ item.name }}
@@ -148,15 +148,20 @@ export default {
     selectItem ({ id }) {
       const friendData = this.contacts[id]
       const roomData = getChatDataByRoomId(this.chatList, id)
+      // 新建聊天框
       if (!roomData) {
         const newData = {
+          type: 'FRIEND',
           message: [],
           roomId: id,
           unReadNum: 0,
-          user: friendData.targetUser
+          user: {
+            alias: friendData.alias,
+            ...friendData.targetUser
+          }
         }
-        /// this.setChatList([newData, ...this.chatList])
-        this.chatList.unshift(newData)
+        // this.chatList.unshift(newData)
+        this.setChatList([newData, ...this.chatList])
       }
       this.$router.push({ name: 'SingleChat', params: { id } })
     }

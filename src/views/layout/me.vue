@@ -149,6 +149,9 @@ export default {
         onConfirm: () => {
           this.LogOut().then(res => {
             this.$router.replace('/login')
+            // this.$nextTick(() => {
+            //   window.location.reload()
+            // })
           })
         }
       }).show()

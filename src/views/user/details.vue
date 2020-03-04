@@ -5,7 +5,7 @@
         <svg-icon icon-class="ic_back" @click.native="$router.back()" class="icon-back" />
         <svg-icon :icon-class="isFavorite ? 'ic_favorite' : 'ic_favorite_border'" @click.native="toggleFavorite" class="icon-favorite" />
       </div>
-      <div class="name">{{ userInfo.name }}</div>
+      <div class="name">{{ userInfo.alias || userInfo.name }}</div>
       <img :src="userInfo.portrait" alt="" class="portrait">
     </div>
     <div class="userinfo">
@@ -127,7 +127,8 @@ export default {
   },
   computed: {
     ...mapGetters({
-      ownUserInfo: 'userInfo'
+      ownUserInfo: 'userInfo',
+      contactList: 'contacts'
     })
   },
   methods: {
@@ -158,9 +159,18 @@ export default {
       }).show()
     },
     _getUserInfo (id) {
+      const contacts = this.contactList
       this.$nodeApi.user.GetUserInfoById({ id }).then(res => {
         this.userInfo = res.data.user
         this.isFriend = res.data.isFriend
+
+        for (const key in contacts) {
+          const value = contacts[key]
+          if (value.targetId === id) {
+            this.userInfo.alias = value.targetAlias
+            return
+          }
+        }
       })
     }
   }

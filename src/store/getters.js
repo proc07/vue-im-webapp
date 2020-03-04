@@ -10,11 +10,11 @@ export default {
   contacts: state => state.data.contacts,
   chatList: (state) => {
     const { contacts, chatList } = state.data
-    // 把别名参数放入到对方数据中
+    // 将好友的用户数据导入到聊天列表数据中
     chatList.forEach(item => {
       if (item.type === 'FRIEND') {
         item.user = {
-          alias: item.alias,
+          alias: contacts[item.roomId]['targetAlias'],
           ...contacts[item.roomId]['targetUser']
         }
       }

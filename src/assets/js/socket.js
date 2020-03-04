@@ -110,10 +110,10 @@ class ChatSocket {
           roomId: res.roomId,
           unReadNum: 0
         }
-        if (res.roomId === 'simulate_system_id') {
+        if (res.type === 'SYSTEM') {
           chatData.user = {
             portrait: 'https://res.cloudinary.com/zhangli-blog/image/upload/v1577949261/%E9%80%9A%E7%9F%A5.png',
-            alias: '消息通知'
+            name: '消息通知'
           }
         } else {
           chatData.user = contacts[res.roomId].targetUser

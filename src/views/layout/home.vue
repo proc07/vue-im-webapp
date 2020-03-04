@@ -35,13 +35,13 @@
             <div class="chat-item" v-else-if="item.type === 'GROUP'">
             </div>
             <!-- 系统 -->
-            <div class="chat-item" v-else>
+            <div class="chat-item" v-else-if="item.type === 'SYSTEM'">
               <div class="face" :class="item.unReadNum ? 'hot': ''" :unread-num="item.unReadNum">
                 <img :src="item.user.portrait" alt="">
               </div>
               <div class="info border-bottom-1px">
                 <div class="top">
-                  <div class="name">{{ item.user.alias }}</div>
+                  <div class="name">{{ item.user.name }}</div>
                   <div class="time">{{ getLastDataByName(item, 'createdAt') }}</div>
                 </div>
                 <div class="content">{{ getLastDataByName(item, 'description') }}</div>
@@ -258,7 +258,7 @@ export default {
         data: [
           {
             content: '<i class="cubeic-message"><i> 发起群聊',
-            handler: '_createGroupChat'
+            handler: '_createGroup'
           },
           {
             content: '<i class="cubeic-person"><i> 添加朋友',
@@ -266,7 +266,7 @@ export default {
           }
         ],
         onSelect: (item, index) => {
-          console.log(item.handler)
+          this[item.handler]()
         }
       }).show()
     },
@@ -281,7 +281,8 @@ export default {
         this.$router.push({ name: 'SingleChat', params: { id: item.roomId } })
       }
     },
-    _createGroupChat () {
+    _createGroup () {
+      this.$router.push({ name: 'CreateGroup' })
     },
     _addFriend () {
     }

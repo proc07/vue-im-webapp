@@ -8,7 +8,7 @@
       <div class="right"></div>
     </div>
     <div class="notiy-list">
-      <div 
+      <div
         class="notiy-friend"
         v-for="item in systemMsg.message || []"
         :key="item.id"
@@ -22,7 +22,7 @@
           </div>
           <div class="handler">
             <div class="status-agreed" v-if="item.entity.status === true">已添加</div>
-            <div class="agreed-btn" v-else>同意</div>
+            <div class="agreed-btn" @click="agreedAddFriend(item)" v-else>同意</div>
             <!-- <div class="status-wait" v-else>等待验证</div> -->
           </div>
         </div>
@@ -59,8 +59,9 @@
       }
     }
     .notiy-list{
+      padding-top: 12px;
       .notiy-friend{
-        padding: 12px;
+        padding: 0 12px 12px 12px;
         .subject{
           color: #9e9e9e;
           font-size: 13px;
@@ -69,7 +70,6 @@
         .item{
           display: flex;
           justify-content: space-between;
-          margin-bottom: 15px;
           .portrait{
             width: 55px;
             height: 55px;
@@ -84,11 +84,12 @@
             justify-content: center;
             .name{
               font-size: 15px;
-              line-height: 22px;
+              line-height: 14px;
+              margin-bottom: 6px;
             }
             .content{
               font-size: 13px;
-              line-height: 22px;
+              line-height: 14px;
               color: #9e9e9e;
               .tag{
                 color: #edf0f4;
@@ -128,7 +129,7 @@
 </style>
 
 <script>
-import { mapGetters } from 'vuex'
+import { mapGetters, mapMutations } from 'vuex'
 
 export default {
   name: 'SystemNotify',
@@ -137,8 +138,44 @@ export default {
   },
   computed: {
     ...mapGetters([
-      'systemMsg'
+      'systemMsg',
+      'contacts'
     ])
+  },
+  activated () {
+    this._setReadMsg(this.systemMsg.message)
+  },
+  methods: {
+    ...mapMutations({
+      setContacts: 'SET_CONTACTS'
+    }),
+    agreedAddFriend (item) {
+      const applicantId = item.entity.applicantId
+      this.$nodeApi.follow.ApplyUserFollow({
+        originId: applicantId
+      }).then(res => {
+        this.$createToast({
+          txt: '添加成功！',
+          type: 'correct'
+        }).show()
+        item.entity.status = true
+        this.$set(this.contacts, res.data.id, res.data)
+      })
+    },
+    _setReadMsg (data) {
+      let count = 0
+      data.forEach(msgItem => {
+        if (!msgItem.arrivalAt) {
+          count++
+          this.$chatSocket.setReadMsg(msgItem.id, (arrivalAt) => {
+            msgItem.arrivalAt = arrivalAt
+          })
+        }
+      })
+      if (count > 0) {
+        this.systemMsg.unReadNum -= count
+      }
+    }
   }
 }
 </script>
