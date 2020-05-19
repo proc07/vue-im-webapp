@@ -1,26 +1,12 @@
 import io from 'socket.io-client'
 import store from '@/store'
 import { getToken } from './token'
-import { getChatDataByRoomId } from './util'
+import { getChatDataByRoomId, generateUUID } from './util'
 
 const STATUS_ONLINE = 1 // 在线
 const STATUS_CONNECT = 0 // 连接中
 const STATUS_LEAVE = -1 // 离开
 const STATUS_RECONNECT = -2 // 重新连接
-
-function generateUUID () {
-  var d = new Date().getTime()
-  if (window.performance && typeof window.performance.now === 'function') {
-    // use high-precision timer if available
-    d += performance.now()
-  }
-  var uuid = 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function (c) {
-    var r = (d + Math.random() * 16) % 16 | 0
-    d = Math.floor(d / 16)
-    return (c === 'x' ? r : (r & 0x3 | 0x8)).toString(16)
-  })
-  return uuid
-}
 
 class ChatSocket {
   constructor () {
@@ -50,6 +36,11 @@ class ChatSocket {
         this.getUnReadMsg()
       })
     }
+  }
+
+  clearSocket () {
+    this.socket = null
+    this.status = null
   }
 
   // 连接服务器
@@ -105,18 +96,25 @@ class ChatSocket {
 
       if (!chatData) {
         // 房间不存在
-        chatData = {
-          message: [],
-          roomId: res.roomId,
-          unReadNum: 0
-        }
         if (res.type === 'SYSTEM') {
-          chatData.user = {
-            portrait: 'https://res.cloudinary.com/zhangli-blog/image/upload/v1577949261/%E9%80%9A%E7%9F%A5.png',
-            name: '消息通知'
+          chatData = {
+            message: [],
+            roomId: res.roomId,
+            unReadNum: 0,
+            user: {
+              portrait: 'https://res.cloudinary.com/zhangli-blog/image/upload/v1577949261/%E9%80%9A%E7%9F%A5.png',
+              name: '消息通知'
+            }
           }
+        } else if (res.type === 'GROUP') {
+          chatData = res
         } else {
-          chatData.user = contacts[res.roomId].targetUser
+          chatData = {
+            message: [],
+            roomId: res.roomId,
+            unReadNum: 0,
+            user: contacts[res.roomId].targetUser
+          }
         }
         store.commit('SET_CHATLIST', [chatData, ...chatList])
       } else {

@@ -1,29 +1,30 @@
 <template>
-  <div class="chat-wrapper">
+  <div class="chat-group-wrapper" @click="closeChatTool">
     <div class="header banner-bg-chat">
       <i class="cubeic-back" @click="onBackPage"></i>
-      <div class="left-name" v-if="false">时代姐妹花</div>
+      <div class="left-name" v-if="false">{{ groupName }}</div>
       <div class="avatar-info" v-else>
         <cube-scroll
           ref="scroll"
-          :data="[1, 2, 3, 4]"
+          v-if="groupData.group"
+          :data="groupData.group.members"
           direction="horizontal"
           class="horizontal-scroll">
           <div class="scroll">
             <img
             class="avatar"
-            v-for="item in 5"
-            :key="item"
-            :src="`https://raw.githubusercontent.com/didi/cube-ui/master/example/pages/recycle-list/avatar${ item % 5 }.png`" alt="">
+            v-for="item in groupData.group.members"
+            :key="item.id"
+            :src="item.userData.portrait" alt="">
           </div>
         </cube-scroll>
-        <div class="name">时代姐妹花</div>
+        <div class="name">{{ groupName }}</div>
       </div>
       <i class="cubeic-person" @click="checkPersonInfo"></i>
     </div>
     <div class="chat-main">
       <cube-scroll ref="chatListScroll" class="view-wrapper">
-        <div v-show="noMore" class="list-noMore">没有更多数据了</div>
+        <div v-show="noMoreData" class="list-noMore">没有更多数据了</div>
         <div v-show="loading" class="list-loading">
           <cube-loading class="icon-loading"></cube-loading>
           <div class="txt">Loading Data</div>
@@ -31,10 +32,18 @@
         <div class="list">
           <div
             class="item-wrapper"
-            v-for="(data, index) in chatData"
+            v-for="(data, index) in groupData.message"
             :key="index"
             :ref="'chatItem-' + index">
-            <div :id="data.id" class="item-left" @click="handleClick(data)">
+            <div class="notified" v-if="data.entityType === 1002">
+              <span class="time">{{ data.createdAt }}</span>
+              <span class="txt">{{ data.entity }}</span>
+            </div>
+            <div
+              class="item-left"
+              v-else-if="data.entityType === 1"
+              :id="data.id"
+              @click="handleClick(data)">
               <div class="avatar" :style="{backgroundImage: 'url(' + (data.avatar || '') + ')'}"></div>
               <div class="bubble">
                 <p>{{ data.msg }}</p>
@@ -43,7 +52,7 @@
                 </div>
               </div>
             </div>
-            <div class="item-right">
+            <div class="item-right" v-else-if="data.entityType === 1">
               <div class="avatar" :style="{backgroundImage: 'url(' + (data.avatar || '') + ')'}"></div>
               <div class="bubble">
                 <p>{{ data.msg }}</p>
@@ -57,30 +66,7 @@
       </cube-scroll>
     </div>
     <div class="chat-footer">
-      <div class="chat-send">
-        <div class="left-btns">
-          <svg-icon @click="isShowFace = !isShowFace" icon-class="ic_emoji" class="icon" />
-          <svg-icon icon-class="ic_record" class="icon" />
-        </div>
-        <textarea
-          rows="1"
-          ref="chatContent"
-          v-model="chatValue"
-          @keyup="onKeyUpChatText"
-          class="send-text">
-        </textarea>
-        <div class="more-btn" @click="isShowMore = !isShowMore">
-          <svg-icon icon-class="ic_more" class="icon" />
-          <svg-icon v-show="false" icon-class="ic_send" class="icon" />
-        </div>
-      </div>
-      <div class="chat-tool">
-        <div class="tool-face" v-show="isShowFace">
-          <face-list></face-list>
-        </div>
-        <div class="tool-more" v-show="isShowMore">
-        </div>
-      </div>
+      <chat-textarea ref="ChatTextarea" @sendMsg="onSendMsg" />
     </div>
   </div>
 </template>
@@ -228,8 +214,9 @@
     .chat-main{
       position: relative;
       flex: 1;
+      background: #ededed;
       // background: url(../assets/images/bg_msg.jpg) no-repeat center center;
-      background: url(../../assets/images/bg_src_woman.jpg) no-repeat center center;
+      // background: url(../../assets/images/bg_src_woman.jpg) no-repeat center center;
       background-size: 100%;
       .view-wrapper {
         position: absolute;
@@ -239,7 +226,7 @@
         width: 100%;
         .list-noMore {
           font-size: 14px;
-          color: #333;
+          color: #a9a9a9;
           text-align: center;
           height: 40px;
           line-height: 40px;
@@ -252,266 +239,72 @@
           height: 40px;
           .icon-loading {
             margin-right: 5px;
-            color: #333;
+            color: #a9a9a9;
           }
           .txt {
             margin-left: 5px;
-            color: #333;
+            color: #a9a9a9;
+          }
+        }
+        .notified{
+          padding: 10px;
+          .time{
+            font-size: 11px;
+            color: #a9a9a9;
+            display: block;
+            margin-bottom: 10px;
+          }
+          .txt{
+            padding: 4px;
+            font-size: 11px;
+            background: #d5d5d5;
+            color: #f5f5f5;
+            display: inline-block;
+            text-align: left;
+            line-height: 17px;
           }
         }
       }
     }
     .chat-footer{
-      width: 100%;
-      background: #f2f2f2;
-      &.show-tool{
-      }
-      .chat-send{
-        display: flex;
-        align-items: flex-end;
-        min-height: 46px;
-        padding-bottom: 9px;
-        box-sizing: border-box;
-        // background: #fff;
-        .left-btns{
-          width: 70px;
-          flex: 0 0 70px;
-          display: flex;
-          justify-content: space-between;
-          padding: 0 5px;
-          box-sizing: border-box;
-          font-size: 25px;
-          color: #4f5a63;
-          margin-bottom: 2px;
-        }
-        .send-text{
-          flex: 1;
-          padding: 5px;
-          resize: none;
-          outline: none;
-          font-size: 14px;
-          height: 28px;
-          line-height: 18px;
-          box-sizing: border-box;
-          border: none;
-        }
-        .more-btn{
-          width: 50px;
-          flex: 0 0 50px;
-          text-align: center;
-          font-size: 26px;
-          color: #4f5a63;
-        }
-      }
-      .chat-tool{
-        .tool-face{
-          border-top: 1px solid #d8dbdc;
-          .face-list{
-          }
-          .tabs{
-            .item{
-              &.del-btn{
-              }
-            }
-          }
-        }
-        .tool-more{
-          border-top: 1px solid #d8dbdc;
-        }
-      }
+      min-height: 46px;
     }
   }
 </style>
 
 <script>
-import FaceList from '@/components/FaceList'
-
-var Mock = {}
-Mock.messages = [
-  'when you popState and actually being well, we expect it further',
-  "But I'm going to take care of ripping out my code in the fact that just something like that",
-  "And what we'll createdCallbacks than that you can still read what each one of this should go out",
-  'So just return Promise back and do this, the route equals',
-  "ah, let's do a clearRoutes it says I'm not going to do",
-  'At least trying new Promise',
-  "then, and then it's going to check what that",
-  'And we zoom in, then you can kind of set, except for a router',
-  'Now strictly today',
-  "I'm going to just takes an iterable as well be to add a visible",
-  "Anyway, so that we'll do a link",
-  "So what I'm going to minify this, so I'll just console",
-  'log data for now, just sometimes look at that',
-  'not then if we wanted to do position from the registerElements primed and red',
-  "That isn't get called",
-  'At all',
-  'No',
-  'Interesting that misc here',
-  'So what was a regular expression',
-  'Because once you get over doing a fancy techniques',
-  "And let's see",
-  'OK, we broke thing to do',
-  'Right',
-  'document',
-  '&quot; So',
-  'Yeah',
-  'which is fine',
-  "And that we'll do sc",
-  'view',
-  'So what you draw the line where is it',
-  'Where is being run',
-  'I think, a million times look at it and styles an iteration, ES2015 update the content for is this',
-  'routes equals Array',
-  'from',
-  'Hm, that might be a trade',
-  "off, because we're just do an animation",
-  'in the attached',
-  'Look at this push',
-  'pull kind of useful to have layout root here is it',
-  'That by default, what we going to grab the',
-  'Yes',
-  "In router, I think, would let's say, for example",
-  "So let's make it can be just this the hour mark on the actual contents",
-  'We just loads though it was the way, a nice this',
-  'Are you would be a little bit more pretty raw, this is a day, dude',
-  'Border',
-  'radius, that',
-  "And I'm going to just do that will take something else",
-  'And thank you might now',
-  "That is the next time, I'm going to come into misc",
-  'And somebody actually not',
-  'source equals home',
-  'But if I was sending me to resolve where we go',
-  'All right',
-  'And it makes JavaScript',
-  'And I have run again',
-  "Normally a massive, as I said, this is always, I'm going to call the different [INAUDIBLE] Hm",
-  'Wow',
-  "We have happen on screen, and the otherwise, don't want",
-  'Yeah, and forth in the new path',
-  "So we don't you use that might very wrong",
-  'But in a customary bug',
-  "Don't forget to hidden or display to none, things like a race when you are actually really long time I want to tell that is where you go",
-  'And that work',
-  "Yeah, and I'm going to do today",
-  'I had misc are all the create one of the performance stuff',
-  'But if you had lots of tea',
-  'Yeah',
-  "Now we're going to come in",
-  'But did working as intended it',
-  'So we can be able to be watching it straightforward slash',
-  "And that, I think that will be all the like since we are valid concept for this, the root of this called HTML5 routing, which I don't know",
-  "I just feels OK, but hopefully, and opacity 0, and it's just put a z",
-  "index of 1 on that's going to be sort of handling of attachedCallback, and we want to transform scale very well be true for them is amazing, like across from the new one that",
-  'You know',
-  "Yeah, we could see now, all being we won't do this thing today",
-  'And so this is a current view',
-  'We have a question ties in',
-  'Why not',
-  'source equals router, why not',
-  "And I think that we'd probably, if we've already to allow it to be the thing",
-  'Oh, all right, so we get it, because I have to juggle it all',
-  'No',
-  'I feel I agree',
-  'It would actually get it, because otherwise, we still have this',
-  'routes',
-  'keys',
-  'So this is a layout boundary',
-  "It's the cause",
-  'Yeah, 3 pixels',
-  'OK',
-  "So since that's true",
-  'And this stuff',
-  'And that work',
-  'Good point, or strict, and then the URL, changed',
-  "But I'm going to, let's see, what we're any",
-  'So the new view, think about',
-  "And then we've defer, why not",
-  "Let's fail",
-  'So this newView, newView is never watching is I was that',
-  "so that it's a compass",
-  'Oh',
-  'North, east, south, we called, all be no ES',
-  'anything',
-  "What I'm curious about your question here",
-  "And I'm going to say",
-  "so let's see",
-  "So let's see",
-  "So we'll say from this animations that we want to do this so that this point",
-  'So we want us to cover next week',
-  'We can actually',
-  "But that they've all been set it",
-  'Yeah',
-  'And at the top and misc here',
-  'But it will be run into a bit different sections',
-  "And I think you'd want each of there's no DOM tree reason",
-  'Well, yeah',
-  'OK, so we have a couple of click for clicks',
-  'And so if we see about this',
-  'So what I think things that I really good start',
-  'script tags at home, kids',
-  "Don't do this file to actually",
-  'Woo',
-  'I made, sir',
-  'So again, particular line of the',
-  "let's call it sc for Supercharged",
-  "There's no",
-  "It's a compass",
-  'Oh',
-  'right',
-  'newView, newView is the simplicity at this one anything below 2015, right',
-  'It broke',
-  "OK, let's see",
-  "So we're going to removeEventListener",
-  'You are the nicest',
-  "something that you know, we'll create that doesn't necessarily end up with something new to these pages",
-  'In router',
-  'And certainly, as I said, you could usually just delete the constructor but createdCallback',
-  'Oh, well, let link of the',
-  'Yes',
-  'If we had to do is I want us to come up writing apps, it can actually, this push',
-  'pull kind of data, which version of something',
-  'So what they can be about view or something that have a thing to do a trade',
-  "off because you've got memory constraints and all these function",
-  "So let's see if",
-  'oh, do we wanted to do this',
-  "If you're attach, what we'd want to know",
-  'That is important think in so that goes to control of [',
-  'UI ',
-  '] transitions, particular expression',
-  "Right, so the otherwise, it should also work on the layout, which might because we're actually remind yourselves that I can do it",
-  'Yeah',
-  'So that, in theory, place all the content as well when that have new ideas',
-  "So this should be a class list, we'll create one of these, what we'll do is I want to do",
-  'All right, bottom, left',
-  'Do you have definitely',
-  'So when the mindset off chaining [INAUDIBLE] out of the same index HTML elements',
-  'Views'
-]
-const CTMSH = 82 // chat textarea max scroll height
+import { mapGetters, mapMutations } from 'vuex'
+import { getChatDataByRoomId } from '@/assets/js/util'
+import ChatTextarea from '@/components/ChatTextarea'
 
 export default {
   name: 'ChatGroup',
   data () {
     return {
-      isShowFace: false,
-      isShowMore: false,
       loading: true,
-      noMore: true,
-      chatValue: '',
-      chatData: [],
-      id: 1
+      noMoreData: false,
+      groupData: {
+        roomId: '',
+        message: [],
+        // group: {}
+      }
     }
   },
-  props: {
+  computed: {
+    ...mapGetters([
+      'userInfo',
+      'chatList',
+      'isNotifyRoom'
+    ]),
+    groupName () {
+      return this.groupData.group && this.groupData.group.groupData.name
+    }
   },
-  mounted () {
-    console.log(this.$route.params.id)
-    this.onPullingDown()
-
-    setTimeout(() => {
-      const lastEl = this.$refs[`chatItem-${this.chatData.length - 1}`]
-      this.$refs.chatListScroll.scrollToElement(lastEl[0], 200)
-    }, 2000)
+  activated () {
+    this.roomId = this.$route.params.id
+    this._getGroupData()
+  },
+  deactivated () {
   },
   methods: {
     onBackPage () {
@@ -520,53 +313,33 @@ export default {
     checkPersonInfo () {
       console.log('checkPersonInfo')
     },
-    onKeyUpChatText () {
-      const el = this.$refs['chatContent']
-      // 1. 必须要加 height = 'auto'
-      // 2. 要放在 height = maxHeight 前面
-      // 否则会出现删除文本时，高度会多出一些间距
-      el.style.height = 'auto'
-      const maxHeight = el.scrollHeight >= CTMSH ? CTMSH : el.scrollHeight
-      el.style.height = `${maxHeight}px`
-    },
-    // list
-    onPullingDown () {
-      this.onFetch().then(res => {
-        if (res.length) {
-          res.forEach(item => {
-            this.chatData.unshift(item)
-          })
-        } else {
-          this.$refs.scroll.forceUpdate()
-        }
-      })
-    },
-    getItem (id) {
-      const msg = Mock.messages[Math.floor(Math.random() * Mock.messages.length)]
-      return {
-        id,
-        avatar: 'https://raw.githubusercontent.com/didi/cube-ui/dev/example/pages/recycle-list/avatar0.png',
-        msg: msg,
-        time: new Date(Math.floor(this.initTime + id * this.size * 1000 + Math.random() * this.size * 1000)).toString()
-      }
-    },
-    onFetch () {
-      let items = []
-      return new Promise((resolve) => {
-        setTimeout(() => {
-          for (let i = 0; i < 30; i++) {
-            items.push(this.getItem(this.id++))
-          }
-          resolve(items)
-        }, 1000)
-      })
-    },
     handleClick (data) {
       console.log(data)
+    },
+    closeChatTool (event) {
+      this.$refs.ChatTextarea.onClose(event)
+    },
+    onSendMsg (msgValue) {
+      console.log(msgValue)
+    },
+    _getGroupData () {
+      const groupData = getChatDataByRoomId(this.chatList, this.roomId)
+
+      if (!this.roomId || !groupData) {
+        return this.$router.push({ name: 'Home' })
+      }
+
+      this._msgLength = groupData.message.length
+      // 没有聊天数据，关闭加载效果
+      if (!this._msgLength) {
+        this.loading = false
+      }
+
+      this.groupData = groupData
     }
   },
   components: {
-    FaceList
+    ChatTextarea
   }
 }
 </script>

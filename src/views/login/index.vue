@@ -108,13 +108,7 @@
 </style>
 
 <script>
-import { mapActions, mapMutations } from 'vuex'
-
-function exchange (data, key1, key2) {
-  const temp = data[key1]
-  data[key1] = data[key2]
-  data[key2] = temp
-}
+import { mapActions } from 'vuex'
 
 export default {
   name: 'Login',
@@ -125,8 +119,6 @@ export default {
         password: ''
       }
     }
-  },
-  created () {
   },
   methods: {
     ...mapActions({
@@ -141,32 +133,8 @@ export default {
       this.LogIn(this.form).then(res => {
         toast.hide()
         this.$router.push({ name: 'Home' })
-        // 初始化一些全局的数据
-        this._initSocket()
-        this._getFollowers()
       })
-    },
-    _initSocket () {
-      this.$chatSocket.initSocket()
-    },
-    _getFollowers () {
-      this.$nodeApi.follow.GetFollowers().then(res => {
-        const followData = {}
-        res.data.map(item => {
-          // 交互位置，统一放到 targetUser 参数
-          if (item.originUser) {
-            exchange(item, 'originUser', 'targetUser')
-            exchange(item, 'originId', 'targetId')
-            exchange(item, 'originAlias', 'targetAlias')
-          }
-          followData[item.id] = item
-        })
-        this.setContacts(followData)
-      })
-    },
-    ...mapMutations({
-      setContacts: 'SET_CONTACTS'
-    })
+    }
   }
 }
 </script>

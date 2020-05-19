@@ -61,41 +61,8 @@
         </div>
       </cube-scroll>
     </div>
-    <div class="chat-footer" id="filter-footer">
-      <div class="chat-send">
-        <div class="left-btns">
-          <svg-icon @click.native="switchFace" icon-class="ic_emoji" class="icon" />
-          <svg-icon icon-class="ic_record" class="icon" />
-        </div>
-        <textarea
-          class="send-text"
-          rows="1"
-          ref="chatContent"
-          v-model="chatValue"
-          @keyup="onKeyUpTextarea"
-          >
-        </textarea>
-        <div class="more-btn" @click.stop="isShowMore = !isShowMore">
-          <svg-icon v-show="chatValue === ''" icon-class="ic_more" class="icon" />
-          <svg-icon v-show="chatValue !== ''" @click.native.stop="onSendMsg" icon-class="ic_send" class="icon" />
-        </div>
-      </div>
-      <div class="chat-tool">
-        <div class="tool-face" v-show="isShowFace">
-          <face-list
-            @select="selectFace"
-            @delete="deleteFace"
-          >
-          </face-list>
-        </div>
-        <div class="tool-more" v-show="isShowMore">
-          <ul class="list">
-            <li class="item">1</li>
-            <li class="item">2</li>
-            <li class="item">3</li>
-          </ul>
-        </div>
-      </div>
+    <div class="chat-footer">
+      <chat-textarea ref="ChatTextarea" @sendMsg="onSendMsg" />
     </div>
   </div>
 </template>
@@ -245,8 +212,9 @@
     .chat-main{
       position: relative;
       flex: 1;
+      background: #ededed;
       // background: url(../assets/images/bg_msg.jpg) no-repeat center center;
-      background: url(../../assets/images/bg_src_woman.jpg) no-repeat center center;
+      // background: url(../../assets/images/bg_src_woman.jpg) no-repeat center center;
       background-size: 100%;
       .view-wrapper {
         position: absolute;
@@ -256,7 +224,7 @@
         width: 100%;
         .list-noMore {
           font-size: 14px;
-          color: #333;
+          color: #a9a9a9;
           text-align: center;
           height: 40px;
           line-height: 40px;
@@ -269,89 +237,30 @@
           height: 40px;
           .icon-loading {
             margin-right: 5px;
-            color: #333;
+            color: #a9a9a9;
           }
           .txt {
             margin-left: 5px;
-            color: #333;
+            color: #a9a9a9;
           }
         }
       }
     }
     .chat-footer{
-      width: 100%;
-      background: #f2f2f2;
-      &.show-tool{
-      }
-      .chat-send{
-        display: flex;
-        align-items: flex-end;
-        min-height: 46px;
-        padding-bottom: 9px;
-        box-sizing: border-box;
-        // background: #fff;
-        .left-btns{
-          width: 70px;
-          flex: 0 0 70px;
-          display: flex;
-          justify-content: space-between;
-          padding: 0 5px;
-          box-sizing: border-box;
-          font-size: 25px;
-          color: #4f5a63;
-          margin-bottom: 2px;
-        }
-        .send-text{
-          flex: 1;
-          padding: 5px;
-          resize: none;
-          outline: none;
-          font-size: 14px;
-          height: 28px;
-          line-height: 18px;
-          box-sizing: border-box;
-          border: none;
-        }
-        .more-btn{
-          width: 50px;
-          flex: 0 0 50px;
-          text-align: center;
-          font-size: 26px;
-          color: #4f5a63;
-        }
-      }
-      .chat-tool{
-        .tool-face{
-          border-top: 1px solid #d8dbdc;
-          .face-list{
-          }
-          .tabs{
-            .item{
-              &.del-btn{
-              }
-            }
-          }
-        }
-        .tool-more{
-          border-top: 1px solid #d8dbdc;
-        }
-      }
+      min-height: 46px;
     }
   }
 </style>
 
 <script>
 import { mapGetters, mapMutations } from 'vuex'
-import FaceList from '@/components/FaceList'
 import { getChatDataByRoomId } from '@/assets/js/util'
+import ChatTextarea from '@/components/ChatTextarea'
 
-const TEXTAREA_MAX_SCROLL_HEIGHT = 82 // textarea max scroll height
 const LOADING_DOM_HEIGHT = 40 // dom loading element height
-const ELEMENT_ID_FOOTER = 'filter-footer' // element id
-const NO_MATCH_CHINESE = /[^\u4e00-\u9fa5]/
 
 export default {
-  name: 'Chat',
+  name: 'SingleChat',
   data () {
     return {
       // 朋友的信息
@@ -360,13 +269,8 @@ export default {
         message: [],
         user: {}
       },
-      // switch
-      isShowFace: false,
-      isShowMore: false,
       loading: true,
       noMoreData: false,
-      // textarea value
-      chatValue: ''
     }
   },
   computed: {
@@ -392,33 +296,6 @@ export default {
   deactivated () {
   },
   methods: {
-    selectFace (faceName) {
-      this.chatValue += faceName
-    },
-    deleteFace () {
-      const value = this.chatValue
-      const lastIndx = value.length - 1
-      const lastChar = value[lastIndx]
-
-      if (lastChar === ']') {
-        const startIndx = value.lastIndexOf('[')
-        const faceStr = value.substring(startIndx + 1, lastIndx)
-
-        if (NO_MATCH_CHINESE.test(faceStr)) {
-          // 字符串中存在非中文
-          this.chatValue = value.slice(0, lastIndx)
-        } else {
-          // false 只有中文
-          this.chatValue = value.substring(0, startIndx)
-        }
-      } else {
-        this.chatValue = value.slice(0, lastIndx)
-      }
-    },
-    switchFace () {
-      this.isShowFace = !this.isShowFace
-      this.$refs.chatContent.focus()
-    },
     onBackPage () {
       this.$router.back()
     },
@@ -428,23 +305,26 @@ export default {
     checkUserMore () {
       // this.$router.push({ name: 'UserDetails', params: { id: this.friendData.user.id } })
     },
-    onKeyUpTextarea () {
-      const el = this.$refs['chatContent']
-      // 1. 必须要加 height = 'auto'
-      // 2. 要放在 height = maxHeight 前面
-      // 否则会出现删除文本时，高度会多出一些间距
-      el.style.height = 'auto'
-      const maxHeight = el.scrollHeight >= TEXTAREA_MAX_SCROLL_HEIGHT ? TEXTAREA_MAX_SCROLL_HEIGHT : el.scrollHeight
-      el.style.height = `${maxHeight}px`
-    },
     closeChatTool (event) {
-      for (const index in event.path) {
-        if (ELEMENT_ID_FOOTER === event.path[index].id) {
-          return
-        }
-      }
-      this.isShowFace = false
-      this.isShowMore = false
+      this.$refs.ChatTextarea.onClose(event)
+    },
+    onSendMsg (msgValue) {
+      // 使用 socket 发送消息
+      this.$chatSocket.sendMsgToFriend({
+        msg: msgValue,
+        roomId: this.roomId
+      }).then(res => {
+        // 发送成功
+        console.log('sendMsg', res)
+        this.friendData.message.push(res)
+        this._refresh()
+        this._scrollToLastElement(200)
+        // mapMutations
+        this.moveTopChat(this.friendData.roomId)
+      }).catch(err => {
+        // 发送失败
+        console.log(err)
+      })
     },
     onScroll (pos) {
       // 上拉加载历史数据
@@ -453,7 +333,7 @@ export default {
         pos.y >= -(LOADING_DOM_HEIGHT / 2) &&
         !this._isGetData
       ) {
-        this._isGetData = true
+        this._isGetData = true // 获取数据状态
         const lastDate = this.friendData.message[0].createdAt
         this.$chatSocket.getHistoryMsg({
           lastDate,
@@ -483,29 +363,6 @@ export default {
         })
       }
     },
-    // 发送按钮
-    onSendMsg () {
-      const msgValue = this.chatValue.trim()
-      if (msgValue) {
-        this.chatValue = ''
-        // 使用 socket 发送消息
-        this.$chatSocket.sendMsgToFriend({
-          msg: msgValue,
-          roomId: this.roomId
-        }).then(res => {
-          // 发送成功
-          console.log('onSendMsg', res)
-          this.friendData.message.push(res)
-          this._refresh()
-          this._scrollToLastElement(200)
-          // mapMutations
-          this.moveTopChat(this.friendData.roomId)
-        }).catch(err => {
-          // 发送失败
-          console.log(err)
-        })
-      }
-    },
     _setReadMsg (data) {
       let count = 0
       data.forEach(msgItem => {
@@ -525,7 +382,7 @@ export default {
         this.$refs['chatListScroll'].refresh()
       })
     },
-    // 滚动聊天某一条数据的位置
+    // 滚动聊天最新条数据的位置
     _scrollToLastElement (time = 0) {
       setTimeout(() => {
         const lastEl = this.$refs[`chatItem-${this.friendData.message.length - 1}`]
@@ -540,7 +397,7 @@ export default {
         return this.$router.push({ name: 'Home' })
       }
 
-      this._msgLength = this.friendData.message.length
+      this._msgLength = friendData.message.length
       // 没有聊天数据，关闭加载效果
       if (!this._msgLength) {
         this.loading = false
@@ -558,7 +415,7 @@ export default {
     })
   },
   components: {
-    FaceList
+    ChatTextarea
   }
 }
 </script>

@@ -18,5 +18,10 @@ export default [
     name: 'GetFriendFollow',
     url: '/follow/getFriendFollow',
     method: 'get'
+  },
+  {
+    name: 'GetGroups',
+    url: 'follow/getGroups',
+    method: 'get'
   }
 ]

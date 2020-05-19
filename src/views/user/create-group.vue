@@ -2,7 +2,7 @@
   <div class="group-wrapper">
     <div class="header">
       <div class="left">
-        <svg-icon icon-class="ic_back" @click.native="$router.back()" class="icon-back" />
+        <svg-icon icon-class="ic_back" @click.native="back" class="icon-back" />
       </div>
       <div class="right">
         <svg-icon icon-class="ic_done" @click.native="done" class="icon-done" />
@@ -37,8 +37,8 @@
           <img class="portrait" :src="item.targetUser.portrait">
           <div class="name">{{ item.targetAlias || item.targetUser.name }}</div>
           <svg-icon
-            @click.native="selectMember(item.targetId)"
-            :icon-class="selectMembers[item.targetId] ? 'ic_check_circle_selected' : 'ic_check_circle_unselected'"
+            @click.native="selectMember(item.id)"
+            :icon-class="checkedMemberMap[item.id] ? 'ic_check_circle_selected' : 'ic_check_circle_unselected'"
             class="ic_check_circle">
           </svg-icon>
         </div>
@@ -81,6 +81,7 @@
       .icon{
         width: 80px;
         height: 80px;
+        flex: 0 0 80px;
         border-radius: 50%;
         background: #fff;
         display: flex;
@@ -92,9 +93,13 @@
         }
       }
       .form{
+        display: flex;
+        flex: 1;
+        flex-direction: column;
+        padding-left: 20px;
         .form-item{
           height: 40px;
-          line-height: 40px;
+          margin-bottom: 8px;
           .label{
             color: #fff;
             margin-right: 10px;
@@ -104,6 +109,7 @@
             background: #1372fa;
             outline: 0;
             border-bottom: 1px solid #fff;
+            width: 100%;
           }
           &.name{
 
@@ -164,49 +170,87 @@
 </style>
 
 <script>
-import { mapGetters } from 'vuex'
+import { mapGetters, mapMutations } from 'vuex'
+import { generateUUID } from '@/assets/js/util'
 
 export default {
   name: 'CreateGroup',
   data () {
     return {
       groupForm: {
+        uuid: generateUUID(),
         name: '',
         description: ''
       },
       checkedAll: false,
-      selectMembers: {
+      checkedMemberMap: {
         length: 0
       }
     }
   },
   computed: {
     ...mapGetters([
-      'contacts'
+      'contacts',
+      'chatList'
     ])
   },
   methods: {
+    ...mapMutations({
+      setChatList: 'SET_CHATLIST'
+    }),
     done () {
-      console.log(this._getSelectMemberId())
+      const { name } = this.groupForm
+      const members = this._getSelectMembers()
+
+      if (!name.length) {
+        this.$createToast({
+          txt: '请填写群名称！',
+          type: 'warn'
+        }).show()
+        return
+      }
+      if (!members.length) {
+        this.$createToast({
+          txt: '请选择群成员！',
+          type: 'warn'
+        }).show()
+        return
+      }
+      this.$nodeApi.apply.CreateGroup({
+        ...this.groupForm,
+        members
+      }).then(res => {
+        // 添加数据到 chatlist
+        console.log('CreateGroup', res)
+        this.setChatList([res.data, ...this.chatList])
+        this.back()
+      })
     },
-    selectMember (targetId) {
-      if (this.selectMembers[targetId]) {
-        this.selectMembers.length -= 1
+    back () {
+      this.$router.back()
+    },
+    // 单选，切换
+    selectMember (id) {
+      const checkedMemberMap = this.checkedMemberMap
+      if (checkedMemberMap[id]) {
+        checkedMemberMap.length -= 1
       } else {
-        this.selectMembers.length += 1
+        checkedMemberMap.length += 1
       }
 
-      this.checkedAll = this.selectMembers.length === this._getContactsLength()
-      this.$set(this.selectMembers, targetId, !this.selectMembers[targetId])
+      this.checkedAll = checkedMemberMap.length === this._getContactsLength()
+      this.$set(checkedMemberMap, id, !checkedMemberMap[id])
     },
+    // 全选
     selectAll () {
       for (const key in this.contacts) {
         const val = this.contacts[key]
-        this.$set(this.selectMembers, val.targetId, !this.checkedAll)
+        this.$set(this.checkedMemberMap, val.id, !this.checkedAll)
       }
-      this.selectMembers.length = this.checkedAll ? 0 : this._getContactsLength()
+      this.checkedMemberMap.length = this.checkedAll ? 0 : this._getContactsLength()
       this.checkedAll = !this.checkedAll
     },
+    // 获取好友的总数量
     _getContactsLength () {
       let count = 0
       for (const key in this.contacts) {
@@ -216,11 +260,14 @@ export default {
       }
       return count
     },
-    _getSelectMemberId () {
+    // 获取选中的好友 (array)
+    _getSelectMembers () {
+      const checkedMemberMap = this.checkedMemberMap
       const res = []
-      for (const key in this.selectMembers) {
-        if (key !== 'length' && this.selectMembers[key]) {
-          res.push(key)
+      for (const key in checkedMemberMap) {
+        if (key !== 'length' && checkedMemberMap[key]) {
+          // targetUser，服务端需要全部成员的信息，推送给每个成员,
+          res.push(this.contacts[key].targetUser)
         }
       }
       return res

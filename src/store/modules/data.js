@@ -3,7 +3,8 @@ const data = {
     socketStatus: null, // 无状态
     systemNotify: {}, // 系统通知
     chatList: [], // 聊天列表
-    contacts: {} // 聊天人
+    contacts: {}, // 聊天人
+    groups: {} // 群组
   },
   mutations: {
     SET_STATUS (state, status) {
@@ -14,6 +15,9 @@ const data = {
     },
     SET_CHATLIST (state, list) {
       state.chatList = list
+    },
+    SET_GROUPS (state, data) {
+      state.groups = data
     },
     // 添加一条消息
     SET_CHAT_MSG (state, { roomId, message }) {

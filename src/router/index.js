@@ -31,12 +31,12 @@ export default new Router({
       path: '/layout',
       redirect: '/layout/home',
       name: 'Layout',
-      component: () => import('@/views/layout/index.vue'),
+      component: () => import('@/views/layout.vue'),
       children: [
         {
           path: 'home',
           name: 'Home',
-          component: () => import('@/views/layout/home.vue'),
+          component: () => import('@/views/tabs/home.vue'),
           meta: {
             fixedTabs: true
           }
@@ -44,7 +44,7 @@ export default new Router({
         {
           path: 'contacts',
           name: 'Contacts',
-          component: () => import('@/views/layout/contacts.vue'),
+          component: () => import('@/views/tabs/contacts.vue'),
           meta: {
             fixedTabs: true
           }
@@ -52,7 +52,7 @@ export default new Router({
         {
           path: 'me',
           name: 'Me',
-          component: () => import('@/views/layout/me.vue'),
+          component: () => import('@/views/tabs/me.vue'),
           meta: {
             fixedTabs: true
           }

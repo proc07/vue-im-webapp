@@ -8,15 +8,21 @@ export default {
   // 聊天数据
   socketStatus: state => state.data.socketStatus,
   contacts: state => state.data.contacts,
+  groups: state => state.data.groups,
   chatList: (state) => {
-    const { contacts, chatList } = state.data
-    // 将好友的用户数据导入到聊天列表数据中
+    const { contacts, chatList, groups } = state.data
+    // 将（好友、群组）数据导入到聊天列表数据中
     chatList.forEach(item => {
-      if (item.type === 'FRIEND') {
-        item.user = {
-          alias: contacts[item.roomId]['targetAlias'],
-          ...contacts[item.roomId]['targetUser']
-        }
+      switch (item.type) {
+        case 'FRIEND':
+          item.user = {
+            alias: contacts[item.roomId]['targetAlias'],
+            ...contacts[item.roomId]['targetUser']
+          }
+          break
+        case 'GROUP':
+          item.group = item.group ? item.group : groups[item.roomId]
+          break
       }
     })
     return chatList

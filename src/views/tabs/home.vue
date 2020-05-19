@@ -20,29 +20,39 @@
             @select="selectChatItem">
             <!-- 好友 -->
             <div class="chat-item" v-if="item.type === 'FRIEND'">
-              <div class="face" :class="item.unReadNum ? 'hot': ''" :unread-num="item.unReadNum">
-                <img :src="item.user.portrait" alt="">
+              <div class="face">
+                <face :unReadNum="item.unReadNum" :faces="[item.user.portrait]" />
               </div>
               <div class="info border-bottom-1px">
                 <div class="top">
                   <div class="name">{{ item.user.alias || item.user.name }}</div>
-                  <div class="time">{{ getLastDataByName(item, 'createdAt') }}</div>
+                  <div class="time">{{ getLastDataByName(item, 'createdAt') | parseCreatedAt }}</div>
                 </div>
                 <div class="content">{{ getLastDataByName(item, 'content') }}</div>
               </div>
             </div>
             <!-- 群 -->
             <div class="chat-item" v-else-if="item.type === 'GROUP'">
+              <div class="group-face">
+                <face :unReadNum="item.unReadNum" :faces="item.group.members | getPortrait" />
+              </div>
+              <div class="info border-bottom-1px">
+                <div class="top">
+                  <div class="name">{{ item.group.groupData.name }}</div>
+                  <div class="time">{{ item.message[item.message.length - 1].createdAt | parseCreatedAt }}</div>
+                </div>
+                <div class="content">{{ item.message[item.message.length - 1].entity }}</div>
+              </div>
             </div>
             <!-- 系统 -->
             <div class="chat-item" v-else-if="item.type === 'SYSTEM'">
-              <div class="face" :class="item.unReadNum ? 'hot': ''" :unread-num="item.unReadNum">
-                <img :src="item.user.portrait" alt="">
+              <div class="face">
+                <face :unReadNum="item.unReadNum" :faces="[item.user.portrait]" />
               </div>
               <div class="info border-bottom-1px">
                 <div class="top">
                   <div class="name">{{ item.user.name }}</div>
-                  <div class="time">{{ getLastDataByName(item, 'createdAt') }}</div>
+                  <div class="time">{{ getLastDataByName(item, 'createdAt') | parseCreatedAt }}</div>
                 </div>
                 <div class="content">{{ getLastDataByName(item, 'description') }}</div>
               </div>
@@ -61,8 +71,6 @@
 </template>
 
 <style lang="scss" scoped>
-  @import "@/assets/scss/variable.scss";
-
   .home-wrapper{
     position: relative;
     .header{
@@ -136,32 +144,13 @@
           }
           .face{
             width: 50px;
-            flex: 0 0 50px;
             height: 50px;
             margin-right: 10px;
-            position: relative;
-            &.hot{
-              &::before{
-                content: attr(unread-num);
-                position: absolute;
-                right: -5px;
-                top: -5px;
-                padding: 0 5px;
-                min-width: 6px;
-                height: 16px;
-                line-height: 16px;
-                text-align: center;
-                background: $color-background-unread;
-                color: $color-txt-unread;
-                border-radius: 8px;
-                font-size: 11px;
-              }
-            }
-            img{
-              width: 100%;
-              height: 100%;
-              border-radius: 5px;
-            }
+          }
+          .group-face{
+            width: 50px;
+            height: 50px;
+            margin-right: 10px;
           }
           .info{
             height: 50px;
@@ -206,6 +195,7 @@
 <script>
 import { mapGetters } from 'vuex'
 import Search from '@/components/Search.vue'
+import Face from '@/components/Face.vue'
 
 export default {
   name: 'Home',
@@ -214,6 +204,14 @@ export default {
       searchVisible: false,
       searchValue: '',
       chatMsgList: []
+    }
+  },
+  filters: {
+    parseCreatedAt (date) {
+      return date.substr(5, 11)
+    },
+    getPortrait (members) {
+      return members.map(item => item.userData.portrait)
     }
   },
   computed: {
@@ -279,6 +277,10 @@ export default {
         this.$router.push({ name: 'SystemNotify', params: {} })
       } else if (item.type === 'FRIEND') {
         this.$router.push({ name: 'SingleChat', params: { id: item.roomId } })
+      } else if (item.type === 'GROUP') {
+        this.$router.push({ name: 'GroupChat', params: { id: item.roomId } })
+      } else {
+        // no processing
       }
     },
     _createGroup () {
@@ -288,7 +290,8 @@ export default {
     }
   },
   components: {
-    Search
+    Search,
+    Face
   }
 }
 </script>

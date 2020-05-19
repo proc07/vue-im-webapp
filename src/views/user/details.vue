@@ -148,7 +148,7 @@ export default {
         onConfirm: (e, value) => {
           this.$nodeApi.apply.ApplyFriend({
             description: value,
-            targetId: this.userInfo.id
+            userId: this.userInfo.id
           }).then(res => {
             this.$createToast({
               txt: '发送成功',
